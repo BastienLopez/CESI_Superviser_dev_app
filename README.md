@@ -1,8 +1,6 @@
-Voici un README complet pour votre projet. Ce guide couvre les étapes pour cloner et lancer le projet, décrit l'utilité des différents fichiers et répertoires, et propose des indications pour les contributions de chacun.
-
----
-
 # Projet Breizhsport
+
+### Auter readme dans /info_projet
 
 Ce projet consiste à développer une application de vente en ligne pour l'entreprise Breizhsport, en utilisant Flask et PostgreSQL. Il est conçu pour fonctionner avec Docker afin de faciliter le déploiement et l'intégration continue (CI/CD).
 
