@@ -1,4 +1,4 @@
-name: CI/CD Pipeline
+name: CI Pipeline
 
 on:
   push:
@@ -7,7 +7,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  test:
     runs-on: ubuntu-latest
 
     services:
@@ -38,6 +38,8 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run Docker Compose
+      - name: Run Tests
+        env:
+          DATABASE_URL: postgresql://user:password@localhost:5432/breizhsportdb
         run: |
-          docker-compose -f docker-compose.yml up --build -d
+          python -m unittest discover -s test
