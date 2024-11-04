@@ -1,13 +1,45 @@
-<!-- app/templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Bienvenue</title>
+    <title>Breizhsport - Boutique en ligne</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='styles.css') }}"
+    />
   </head>
   <body>
-    <h1>Bienvenue sur Breizhsport!</h1>
-    <p>Cette application est en cours de développement.</p>
+    <header>
+      <h1>Bienvenue sur Breizhsport</h1>
+      <p>Découvrez nos articles de sport de haute qualité</p>
+    </header>
+
+    <main>
+      <section class="products">
+        <div class="product">
+          <img src="https://via.placeholder.com/200" alt="Produit 1" />
+          <h2>Produit 1</h2>
+          <p class="price">€29.99</p>
+          <button>Ajouter au panier</button>
+        </div>
+        <div class="product">
+          <img src="https://via.placeholder.com/200" alt="Produit 2" />
+          <h2>Produit 2</h2>
+          <p class="price">€39.99</p>
+          <button>Ajouter au panier</button>
+        </div>
+        <div class="product">
+          <img src="https://via.placeholder.com/200" alt="Produit 3" />
+          <h2>Produit 3</h2>
+          <p class="price">€49.99</p>
+          <button>Ajouter au panier</button>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <p>&copy; 2024 Breizhsport. Tous droits réservés.</p>
+    </footer>
   </body>
 </html>

@@ -7,21 +7,19 @@ services:
       dockerfile: Dockerfile
     container_name: breizhsport_app
     ports:
-      - "8000:8000" # Port d'exposition pour accéder à l'application
+      - "8000:8000"
+    environment:
+      - MONGO_URI=mongodb://mongo:27017
     depends_on:
-      - db
-    environment:
-      - DATABASE_URL=postgresql://user:password@db:5432/breizhsportdb
+      - mongo
 
-  db:
-    image: postgres:13
-    container_name: breizhsport_db
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: breizhsportdb
+  mongo:
+    image: mongo:latest
+    container_name: breizhsport_mongo
+    ports:
+      - "27017:27017"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - mongo_data:/data/db
 
 volumes:
-  db_data:
+  mongo_data:

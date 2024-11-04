@@ -16,5 +16,8 @@ COPY app/ /app
 # Exposer le port utilisé par Flask
 EXPOSE 8000
 
+# Définir la variable d'environnement FLASK_APP
+ENV FLASK_APP=main.py
+
 # Commande pour démarrer l'application
-CMD ["python", "main.py"]
+CMD ["flask", "run", "--host=0.0.0.0", "--port=8000"]
