@@ -1,69 +1,108 @@
-# CESI_Superviser_dev_app
-Superviser et assurer le développement des applications
-
-### **Phases du Projet et Livrables**
-
-#### **1. Veille Technologique**
-   - **Objectif :** Mettre en place un système de veille active pour maintenir à jour les compétences de l’équipe.
-   - **Livrables :**
-     - Description du système de veille.
-     - Tableau des sources de veille (blogs, conférences, forums…).
-
-#### **2. Développement de l’Application**
-   - **Objectif :** Proposer une architecture et des méthodes de développement modernes adaptées aux besoins de Breizhsport.
-   - **Livrables :**
-     - Schéma d’architecture (Cloud Native).
-     - Grille de choix pour la méthodologie de développement et d’hébergement.
-     - Documentation des critères de sélection des méthodes et technologies.
-     - Version déployée de la maquette fonctionnelle / PoC avec justification des choix techniques.
-
-#### **3. CI/CD et Intégration Continue**
-   - **Objectif :** Mettre en place une chaîne CI/CD pour automatiser les déploiements et les tests.
-   - **Livrables :**
-     - Description du pipeline CI/CD.
-     - Captures d’écran et rapport d’exécution des tâches CI/CD.
-
-#### **4. Référent Technique et Résolution de Problèmes**
-   - **Objectif :** Identifier et documenter les problèmes potentiels du passage de la PoC à la production.
-   - **Livrables :**
-     - Liste des problèmes potentiels (scalabilité, haute disponibilité…).
-     - Suggestions de solutions techniques.
-
-#### **5. Apprentissage et Transmission de Connaissances**
-   - **Objectif :** Mettre en place un plan de montée en compétences pour les nouveaux membres de l’équipe.
-   - **Livrables :**
-     - Description des actions de formation (sessions de partage, pair coding…).
-
-#### **6. Politique de Qualité Logicielle et Assurance Qualité**
-   - **Objectif :** Établir une politique qualité pour garantir la robustesse et la maintenabilité de l’application.
-   - **Livrables :**
-     - Description de la politique qualité logicielle.
-     - Plan d’assurance qualité avec outils et méthodes (tests, pair programming…).
-
-#### **7. Politique de Tests**
-   - **Objectif :** Mettre en place une stratégie de tests pour assurer la conformité fonctionnelle et éviter la régression.
-   - **Livrables :**
-     - Documentation de la politique de tests (tests unitaires, intégration, acceptation…).
-
-#### **8. Sécurité des Applications**
-   - **Objectif :** Garantir la sécurité de l'application et du SI de l’entreprise.
-   - **Livrables :**
-     - Procédures pour assurer la sécurité de l’application.
-     - Plan d’audit de sécurité.
-
-#### **9. Amélioration Continue et Maintenance**
-   - **Objectif :** Définir une démarche pour maintenir l’application dans le temps.
-   - **Livrables :**
-     - Description des processus d’amélioration continue et de maintenance.
+Voici un README complet pour votre projet. Ce guide couvre les étapes pour cloner et lancer le projet, décrit l'utilité des différents fichiers et répertoires, et propose des indications pour les contributions de chacun.
 
 ---
 
-### **Plan d’Action et Priorités**
+# Projet Breizhsport
 
-1. **Débuter par la veille technologique** pour assurer une base de connaissances commune.
-2. **Mettre en place l'architecture et les choix technologiques** pour le développement.
-3. **Développer la maquette PoC** pour validation rapide des choix techniques.
-4. **Implémenter la chaîne CI/CD** pour automatiser les tests et déploiements.
-5. **Préparer la politique qualité et le plan de tests** en parallèle avec le développement.
-6. **Veiller à la sécurité et établir une démarche d’amélioration continue** pour une maintenance efficace.
+Ce projet consiste à développer une application de vente en ligne pour l'entreprise Breizhsport, en utilisant Flask et PostgreSQL. Il est conçu pour fonctionner avec Docker afin de faciliter le déploiement et l'intégration continue (CI/CD).
 
+## Table des matières
+
+- [Prérequis](#prérequis)
+- [Installation](#installation)
+- [Structure du projet](#structure-du-projet)
+- [Guide pour les contributions](#guide-pour-les-contributions)
+
+---
+
+### Prérequis
+
+- **Docker** et **Docker Compose** installés sur votre machine.
+- Accès à un terminal/commande pour exécuter les commandes de clonage et de lancement du projet.
+
+### Installation
+
+1. **Cloner le dépôt**
+
+   ```bash
+   git clone https://github.com/BastienLopez/CESI_Superviser_dev_app.git
+   cd CESI_Superviser_dev_app
+   ```
+
+2. **Construire et lancer le projet avec Docker Compose**
+
+   ```bash
+   docker-compose up --build
+   ```
+
+3. **Accéder à l'application**
+   Ouvrez votre navigateur et rendez-vous sur [http://localhost:8000](http://localhost:8000).
+
+---
+
+### Structure du projet
+
+Voici la structure des dossiers et fichiers principaux du projet, avec une explication de leur rôle.
+
+```plaintext
+/project-root
+|-- app/
+|   |-- main.py            # Fichier principal Python qui lance l'application Flask
+|   |-- templates/
+|       |-- index.html     # Page HTML affichée à l'accueil de l'application
+|
+|-- docker/
+|   # Ce dossier peut contenir des fichiers Docker supplémentaires, par exemple pour des configurations spécifiques
+|
+|-- tests/                 # Emplacement prévu pour les tests (fichiers à ajouter)
+|
+|-- docker-compose.yml     # Configuration Docker Compose pour orchestrer les services (app et db)
+|-- Dockerfile             # Fichier Docker pour l'image de l'application Flask
+|-- requirements.txt       # Fichier des dépendances Python nécessaires au projet
+|-- README.md              # Documentation du projet (ce fichier)
+```
+
+- **`app/main.py`** : Ce fichier est le point d'entrée de l'application. Il contient le code Flask pour démarrer le serveur et servir les pages HTML.
+- **`app/templates/index.html`** : La page HTML affichée à l'utilisateur, personnalisable pour ajouter du contenu.
+- **`docker-compose.yml`** : Fichier de configuration pour lancer les conteneurs Docker nécessaires (application Flask et base de données PostgreSQL).
+- **`Dockerfile`** : Fichier de configuration Docker pour construire l'image de l'application Flask.
+- **`requirements.txt`** : Liste des dépendances Python requises pour l'application.
+
+---
+
+### Guide pour les contributions
+
+Le travail est réparti entre trois personnes. Voici les différentes tâches et où concentrer les modifications :
+
+#### 1. **Développeur 1 : Backend & API**
+
+- Travailler principalement dans `app/main.py` pour ajouter des routes Flask supplémentaires ou des fonctionnalités backend.
+- Ajouter les configurations nécessaires pour la base de données si des opérations sont à effectuer (connexion à PostgreSQL via SQLAlchemy ou psycopg2).
+- **Tests** : Préparer le fichier de tests (par exemple, `tests/test_app.py`) pour tester les routes et fonctionnalités du backend.
+
+#### 2. **Développeur 2 : Frontend (HTML et intégration Flask)**
+
+- Travailler sur les templates HTML dans `app/templates/`. Le fichier `index.html` peut être enrichi avec des éléments supplémentaires ou de nouveaux fichiers HTML peuvent être ajoutés pour d'autres routes.
+- Utiliser `render_template` dans `main.py` pour connecter les nouvelles pages HTML aux routes Flask.
+- **Tests** : Vérifier l'affichage des pages et s'assurer que les liens et formulaires fonctionnent correctement.
+
+#### 3. **Développeur 3 : Docker et CI/CD**
+
+- Gérer les configurations Docker dans `Dockerfile` et `docker-compose.yml`. Optimiser les fichiers pour garantir que l’application démarre correctement et que les connexions sont fluides entre les services.
+- Ajouter ou configurer les workflows CI/CD dans `.github/workflows/ci.yml` pour l’intégration continue et les tests automatisés.
+- **Tests** : S'assurer que les services démarrent sans erreur, et vérifier que le pipeline CI/CD s’exécute correctement sur chaque commit ou pull request.
+
+---
+
+### Bonnes pratiques pour les contributions
+
+1. **Branching** : Utilisez des branches distinctes pour chaque fonctionnalité ou correctif, par exemple, `feature/backend-routes`, `feature/frontend-html`, `feature/docker-setup`.
+2. **Pull Requests** : Créez une pull request pour chaque modification. Évitez les commits directs sur la branche `main` afin de maintenir l'intégrité du code.
+3. **Documentation** : Ajoutez des commentaires dans le code pour expliquer les parties complexes ou importantes, surtout dans `main.py` et `docker-compose.yml`.
+
+---
+
+### Points importants
+
+- **Variables d'environnement** : Si des informations sensibles (comme des mots de passe) doivent être ajoutées, utilisez un fichier `.env` et configurez Docker pour les charger. Évitez d'ajouter des informations sensibles directement dans les fichiers.
+- **Maintenance de la documentation** : Ce fichier README doit être mis à jour dès que de nouvelles fonctionnalités sont ajoutées.
