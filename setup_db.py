@@ -1,11 +1,11 @@
 from pymongo import MongoClient
 
 # Connexion à MongoDB
-client = MongoClient("mongodb://mongo:27017")  # Assurez-vous que c'est bien l'URI de MongoDB dans Docker
+client = MongoClient("mongodb://mongo:27017")
 db = client["breizhsportdb"]
 products_collection = db["products"]
 
-# Supprimer tous les documents existants (pour éviter les doublons si on relance le script)
+# Supprimer tous les documents existants pour éviter les doublons
 products_collection.delete_many({})
 
 # Insérer des produits par défaut

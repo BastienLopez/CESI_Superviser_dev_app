@@ -1,13 +1,17 @@
+<!-- app/templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Breizhsport - Boutique en ligne</title>
     <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='styles.css') }}"
+      rel="icon"
+      href="{{ url_for('static', filename='favicon.ico') }}"
+      type="image/x-icon"
     />
+
+    <title>Breizhsport - Boutique en ligne</title>
+    <link rel="stylesheet" href="static/style.css" />
   </head>
   <body>
     <header>
@@ -17,24 +21,16 @@
 
     <main>
       <section class="products">
+        {% if products %} {% for product in products %}
         <div class="product">
-          <img src="https://via.placeholder.com/200" alt="Produit 1" />
-          <h2>Produit 1</h2>
-          <p class="price">€29.99</p>
+          <img src="{{ product.image_url }}" alt="{{ product.name }}" />
+          <h2>{{ product.name }}</h2>
+          <p class="price">€{{ product.price }}</p>
           <button>Ajouter au panier</button>
         </div>
-        <div class="product">
-          <img src="https://via.placeholder.com/200" alt="Produit 2" />
-          <h2>Produit 2</h2>
-          <p class="price">€39.99</p>
-          <button>Ajouter au panier</button>
-        </div>
-        <div class="product">
-          <img src="https://via.placeholder.com/200" alt="Produit 3" />
-          <h2>Produit 3</h2>
-          <p class="price">€49.99</p>
-          <button>Ajouter au panier</button>
-        </div>
+        {% endfor %} {% else %}
+        <p>Aucun produit disponible pour le moment.</p>
+        {% endif %}
       </section>
     </main>
 
