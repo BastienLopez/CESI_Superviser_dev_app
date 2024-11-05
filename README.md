@@ -83,6 +83,7 @@ Le travail est réparti entre trois personnes. Voici les différentes tâches et
 - Travailler sur les templates HTML dans `app/templates/`. Le fichier `index.html` peut être enrichi avec des éléments supplémentaires ou de nouveaux fichiers HTML peuvent être ajoutés pour d'autres routes.
 - Utiliser `render_template` dans `main.py` pour connecter les nouvelles pages HTML aux routes Flask.
 - **Tests** : Vérifier l'affichage des pages et s'assurer que les liens et formulaires fonctionnent correctement.
+- Pour lancer les tests : lancer le projet (docker compose up --build) puis lancer test (docker exec -it breizhsport_app sh -c "PYTHONPATH=/app python /app/test/test_app.py")
 
 #### 3. **Développeur 3 : Docker et CI/CD**
 
