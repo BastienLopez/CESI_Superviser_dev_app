@@ -1,25 +1,35 @@
-version: "3.8"
+version: "3"
 
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: breizhsport_app
+    build: .
+    command: python main.py
     ports:
       - "8000:8000"
     environment:
-      - MONGO_URI=mongodb://mongo:27017
+      MONGO_URI: mongodb://mongo:27017/breizhsportdb
+    depends_on:
+      - mongo
+
+  test:
+    build: .
+    command: python -m unittest discover -s test
+    environment:
+      MONGO_URI: mongodb://mongo:27017/breizhsportdb
     depends_on:
       - mongo
 
   mongo:
     image: mongo:latest
-    container_name: breizhsport_mongo
     ports:
       - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-
-volumes:
-  mongo_data:
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "echo",
+          "'db.runCommand({ ping: 1 })' | mongo breizhsportdb --quiet",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
