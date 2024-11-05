@@ -101,10 +101,3 @@ Le travail est réparti entre trois personnes. Voici les différentes tâches et
 1. **Branching** : Utilisez des branches distinctes pour chaque fonctionnalité ou correctif, par exemple, `feature/backend-routes`, `feature/frontend-html`, `feature/docker-setup`.
 2. **Pull Requests** : Créez une pull request pour chaque modification. Évitez les commits directs sur la branche `main` afin de maintenir l'intégrité du code.
 3. **Documentation** : Ajoutez des commentaires dans le code pour expliquer les parties complexes ou importantes, surtout dans `main.py` et `docker-compose.yml`.
-
----
-
-### Points importants
-
-- **Variables d'environnement** : Si des informations sensibles (comme des mots de passe) doivent être ajoutées, utilisez un fichier `.env` et configurez Docker pour les charger. Évitez d'ajouter des informations sensibles directement dans les fichiers.
-- **Maintenance de la documentation** : Ce fichier README doit être mis à jour dès que de nouvelles fonctionnalités sont ajoutées.
