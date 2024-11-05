@@ -3,10 +3,12 @@ name: CI Pipeline
 on:
   push:
     branches:
-      - "*"
+      - main
+      - "**"
   pull_request:
     branches:
-      - "*"
+      - main
+      - "**"
 
 jobs:
   test:
@@ -40,5 +42,6 @@ jobs:
       - name: Run tests
         env:
           MONGO_URI: mongodb://localhost:27017/breizhsportdb
+          PYTHONPATH: /app
         run: |
-          python -m unittest discover -s test
+          python /app/test/test_app.py
