@@ -1,0 +1,18 @@
+name: Test Minimal Workflow
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+    branches:
+      - "**"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Echo Test
+        run: echo "Hello, GitHub Actions!"
