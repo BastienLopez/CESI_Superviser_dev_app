@@ -77,6 +77,7 @@ Le travail est réparti entre trois personnes. Voici les différentes tâches et
 - Travailler principalement dans `app/main.py` pour ajouter des routes Flask supplémentaires ou des fonctionnalités backend.
 - Ajouter les configurations nécessaires pour la base de données si des opérations sont à effectuer (connexion à PostgreSQL via SQLAlchemy ou psycopg2).
 - **Tests** : Préparer le fichier de tests (par exemple, `tests/test_app.py`) pour tester les routes et fonctionnalités du backend.
+- Pour lancer les tests : lancer le projet (docker compose up --build) puis lancer test (docker exec -it breizhsport_app sh -c "PYTHONPATH=/app python /app/test/test_app.py")
 
 #### 2. **Développeur 2 : Frontend (HTML et intégration Flask)**
 
