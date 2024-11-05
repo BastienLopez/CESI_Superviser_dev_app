@@ -102,6 +102,8 @@ Le travail est réparti entre trois personnes. Voici les différentes tâches et
 
 ---
 
+---
+
 ### Points importants
 
 - **Variables d'environnement** : Si des informations sensibles (comme des mots de passe) doivent être ajoutées, utilisez un fichier `.env` et configurez Docker pour les charger. Évitez d'ajouter des informations sensibles directement dans les fichiers.
