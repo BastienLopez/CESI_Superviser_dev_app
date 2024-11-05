@@ -1,4 +1,4 @@
-name: Test Minimal Workflow
+name: Docker Test Workflow
 
 on:
   push:
@@ -13,6 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Echo Test
-        run: echo "Hello, GitHub Actions!"
+        uses: actions/checkout@v4
+
+      - name: Run tests in Docker
+        run: docker compose run test
