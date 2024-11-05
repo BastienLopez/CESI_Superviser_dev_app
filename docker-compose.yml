@@ -30,6 +30,6 @@ services:
           "echo",
           "'db.runCommand({ ping: 1 })' | mongo breizhsportdb --quiet",
         ]
-      interval: 10s
+      interval: 11s
       timeout: 5s
       retries: 5
