@@ -74,7 +74,7 @@ Voici la structure des dossiers et fichiers principaux du projet, avec une expli
 
 Le travail est réparti entre trois personnes. Voici les différentes tâches et où concentrer les modifications :
 
-#### 1. **Développeur 1 : Backend & API**
+#### 1. **Développeur 1 : Backend & API** dd
 
 - Travailler principalement dans `app/main.py` pour ajouter des routes Flask supplémentaires ou des fonctionnalités backend.
 - Ajouter les configurations nécessaires pour la base de données MongoDB.
