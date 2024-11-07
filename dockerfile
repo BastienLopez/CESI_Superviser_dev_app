@@ -1,4 +1,3 @@
-# Dockerfile
 FROM python:3.10-slim
 
 # Définir le répertoire de travail
@@ -11,7 +10,7 @@ COPY requirements.txt .
 RUN pip install -r requirements.txt
 
 # Copier le code de l'application
-COPY app/ /app
+COPY . .
 
 # Exposer le port utilisé par Flask
 EXPOSE 8000

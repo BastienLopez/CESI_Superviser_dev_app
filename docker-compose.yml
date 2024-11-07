@@ -3,7 +3,9 @@ version: "3"
 services:
   app:
     build: .
-    command: python main.py
+    command: python /app/main.py  # Assurez-vous d'utiliser le chemin absolu vers main.py
+    volumes:
+      - .:/app  # Monte le répertoire actuel sur /app dans le conteneur
     ports:
       - "8000:8000"
     environment:
@@ -13,7 +15,9 @@ services:
 
   test:
     build: .
-    command: python -m unittest discover -s test
+    command: python -m unittest discover -s /app/test  # Assurez-vous que les tests sont dans /app/test
+    volumes:
+      - .:/app  # Monte le répertoire actuel sur /app dans le conteneur
     environment:
       MONGO_URI: mongodb://mongo:27017/breizhsportdb
     depends_on:

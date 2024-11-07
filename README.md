@@ -31,7 +31,14 @@ Ce projet consiste à développer une application de vente en ligne pour l'entre
 
    ```bash
    docker-compose up --build
+   docker-compose up --build -d
    ```
+```bash
+docker exec -it <container_id> /bin/bash
+docker exec -it a11a087341aa /bin/bash
+
+```
+
 
 3. **Accéder à l'application**
    Ouvrez votre navigateur et rendez-vous sur [http://localhost:8000](http://localhost:8000).
