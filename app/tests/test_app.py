@@ -75,13 +75,17 @@ class FlaskAppTests(unittest.TestCase):
             self.assertIsInstance(product["image_url"], str)
 
     def test_inserted_products_in_db(self):
-        """Test pour s'assurer que les produits de test sont bien insérés dans MongoDB."""
+        """Test pour s'assurer que les produits de tests sont bien insérés dans MongoDB."""
         products = list(self.products_collection.find())
         self.assertGreater(len(products), 0, "La collection 'products' dans MongoDB est vide.")
         first_product = products[0]
         self.assertIn("name", first_product)
         self.assertIn("price", first_product)
         self.assertIn("image_url", first_product)
+
+
+
+
 
 if __name__ == '__main__':
     unittest.main(testRunner=CustomTestRunner())

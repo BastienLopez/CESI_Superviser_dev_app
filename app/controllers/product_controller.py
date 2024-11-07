@@ -1,5 +1,3 @@
-# controllers/product_controller.py
-
 from flask import Blueprint, request, jsonify
 from app.services.product_service import ProductService
 

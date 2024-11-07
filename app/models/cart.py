@@ -10,14 +10,15 @@ class CartProducts:
             "quantity": self.quantity
         }
 
+
 class Cart:
     def __init__(self, user_id, products):
         self.user_id = user_id
-        self.products = products
+        self.products = products  # Ce devrait être un champ "products" ici
 
     def to_dict(self):
         """Convertit l'objet Cart en dictionnaire pour MongoDB."""
         return {
             "user_id": self.user_id,
-            "products": [product.to_dict() for product in self.products]  # Liste de produits
+            "products": self.products  # Conversion de products en dictionnaire
         }

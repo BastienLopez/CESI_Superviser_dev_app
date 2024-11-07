@@ -15,7 +15,7 @@ services:
 
   test:
     build: .
-    command: python -m unittest discover -s /app/test  # Assurez-vous que les tests sont dans /app/test
+    command: python -m unittest discover -s /app/tests  # Assurez-vous que les tests sont dans /app/tests
     volumes:
       - .:/app  # Monte le répertoire actuel sur /app dans le conteneur
     environment:
