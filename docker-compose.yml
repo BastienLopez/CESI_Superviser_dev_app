@@ -1,42 +1,34 @@
-version: "3"
+version: "3.8"
 
 services:
-  app:
-    build: .
-    command: python main.py
+  auth_service:
+    build:
+      context: ./auth_service/app
+      dockerfile: Dockerfile
+    ports:
+      - "5001:5000" # Exemple de port
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/authdb
+
+  frontend_service:
+    build:
+      context: ./frontend_service/app
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
     environment:
-      MONGO_URI: mongodb://mongo:27017/breizhsportdb
-    depends_on:
-      - mongo
+      - MONGO_URI=mongodb://mongo:27017/frontenddb
 
-  test:
-    build: .
-    command: python -m unittest discover -s test
+  product_service:
+    build:
+      context: ./product_service/app
+      dockerfile: Dockerfile
+    ports:
+      - "5002:5000"
     environment:
-      MONGO_URI: mongodb://mongo:27017/breizhsportdb
-    depends_on:
-      - mongo
+      - MONGO_URI=mongodb://mongo:27017/productdb
 
   mongo:
-    image: mongo:latest
+    image: mongo
     ports:
       - "27017:27017"
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "echo",
-          "'db.runCommand({ ping: 1 })' | mongo breizhsportdb --quiet",
-        ]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  sonarqube:
-    image: sonarqube:latest
-    ports:
-      - "9000:9000"
-    environment:
-      SONAR_ES_BOOTSTRAP_CHECKS_DISABLE: "true" # Désactive les vérifications pour faciliter le déploiement

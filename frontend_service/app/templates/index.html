@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Breizhsport</title>
+  </head>
+  <body>
+    <h1>Catalogue de Produits</h1>
+    <div id="products"></div>
+
+    <script>
+      fetch("http://localhost:8002/products")
+        .then((response) => response.json())
+        .then((data) => {
+          const productsDiv = document.getElementById("products");
+          data.products.forEach((product) => {
+            const productDiv = document.createElement("div");
+            productDiv.innerHTML = `<h3>${product.name}</h3><p>${product.price} €</p>`;
+            productsDiv.appendChild(productDiv);
+          });
+        })
+        .catch((error) => console.error("Error fetching products:", error));
+    </script>
+  </body>
+</html>
