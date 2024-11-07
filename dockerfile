@@ -18,6 +18,9 @@ EXPOSE 8000
 
 # Définir la variable d'environnement FLASK_APP
 ENV FLASK_APP=main.py
+ENV PYTHONPATH=/app
+ENV FLASK_ENV=development
+ENV DATABASE_URI=mongodb://mongo:27017/mydb
 
 # Commande pour démarrer l'application
 CMD ["flask", "run", "--host=0.0.0.0", "--port=8000"]
