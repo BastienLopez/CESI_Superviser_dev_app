@@ -1,21 +1,17 @@
 from pymongo import MongoClient
-from werkzeug.security import generate_password_hash
+import bcrypt
 
-# Connexion à MongoDB
-client = MongoClient("mongodb://mongo_auth:27017/")
+client = MongoClient("mongodb://mongo:27017/")
 db = client["authdb"]
 
-# Création de la collection des utilisateurs et ajout de données de test
 def setup_auth_db():
     users_collection = db["users"]
-    
-    # Vider la collection pour éviter les doublons lors de chaque exécution
     users_collection.delete_many({})
     
-    # Insertion de quelques utilisateurs de test
+    # Ajout d'utilisateurs de test avec le même hashage que dans main.py
     users_collection.insert_many([
-        {"username": "user1", "password": generate_password_hash("password1")},
-        {"username": "user2", "password": generate_password_hash("password2")}
+        {"username": "user1", "password": bcrypt.hashpw("password1".encode("utf-8"), bcrypt.gensalt())},
+        {"username": "user2", "password": bcrypt.hashpw("password2".encode("utf-8"), bcrypt.gensalt())}
     ])
     print("Base de données d'authentification initialisée avec succès.")
 

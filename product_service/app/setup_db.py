@@ -1,7 +1,7 @@
 from pymongo import MongoClient
 
 # Connexion à MongoDB
-client = MongoClient("mongodb://mongo_product:27018/")
+client = MongoClient("mongodb://mongo:27017/")  # Assurez-vous que ce port correspond à celui dans docker-compose
 db = client["productdb"]
 
 # Création des collections pour les produits et le panier et ajout de données de test

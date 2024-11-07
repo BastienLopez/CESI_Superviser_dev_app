@@ -1,8 +1,10 @@
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
+import os
 
 app = Flask(__name__)
-client = MongoClient("mongodb://mongo:27017/")
+mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo:27017/productdb")
+client = MongoClient(mongo_uri)
 db = client["productdb"]
 
 @app.route("/products", methods=["GET"])
@@ -10,7 +12,7 @@ def get_products():
     products = list(db["products"].find({}, {"_id": 0}))
     return jsonify({"products": products}), 200
 
-@app.route("/cart/add", methods=["POST"])
+@app.route("/cart", methods=["POST"])
 def add_to_cart():
     data = request.json
     db["carts"].insert_one(data)
