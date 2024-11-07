@@ -2,6 +2,11 @@ from flask import Flask, render_template, jsonify
 from pymongo import MongoClient
 import os
 
+from controllers.auth_controller import auth_bp
+from controllers.product_controller import product_bp
+from controllers.cart_controller import cart_bp
+
+
 app = Flask(__name__)
 
 # Connexion à MongoDB
@@ -36,6 +41,10 @@ def get_products():
         print("API - Aucun produit trouvé dans la collection 'products'.")
 
     return jsonify(products)
+
+app.register_blueprint(auth_bp, url_prefix='/api/auth')
+app.register_blueprint(product_bp, url_prefix='/api/products')
+app.register_blueprint(cart_bp, url_prefix='/api/cart')
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8000)
