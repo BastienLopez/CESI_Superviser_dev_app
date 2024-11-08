@@ -17,11 +17,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installer Docker Compose Plugin
-      - name: Install Docker Compose
+      # 2. Installer Docker Compose avec pip
+      - name: Install Docker Compose with pip
         run: |
-          sudo apt update
-          sudo apt install -y docker-compose-plugin
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip install docker-compose
 
       # 3. Set up Docker Buildx (optionnel mais utile pour la compatibilité)
       - name: Set up Docker Buildx
@@ -29,9 +30,9 @@ jobs:
 
       # 4. Construire et exécuter les conteneurs avec Docker Compose
       - name: Build and Run tests with Docker Compose
-        run: docker compose up --build --abort-on-container-exit
+        run: docker-compose up --build --abort-on-container-exit
 
       # 5. Nettoyer les conteneurs après les tests
       - name: Clean up
         if: always()
-        run: docker compose down
+        run: docker-compose down
