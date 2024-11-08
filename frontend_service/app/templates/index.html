@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Breizhsport</title>
+  </head>
+  <body>
+    <h1>Catalogue de Produits</h1>
+    <div id="auth-status"></div>
+    <div id="products"></div>
+
+    <script>
+      // Récupérer les données depuis l'API
+      fetch("/api/data")
+        .then((response) => response.json())
+        .then((data) => {
+          const authStatusDiv = document.getElementById("auth-status");
+          authStatusDiv.textContent = `Statut d'authentification: ${data.auth_status}`;
+
+          const productsDiv = document.getElementById("products");
+          data.products.forEach((product) => {
+            const productDiv = document.createElement("div");
+            productDiv.innerHTML = `<h3>${product.name}</h3><p>${product.price} €</p>`;
+            productsDiv.appendChild(productDiv);
+          });
+        })
+        .catch((error) =>
+          console.error("Erreur lors de la récupération des données:", error)
+        );
+    </script>
+  </body>
+</html>

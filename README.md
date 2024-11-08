@@ -1,110 +1,109 @@
-# Projet Breizhsport
+# Breizhsport - Application Microservices
 
-### Autre readme dans /info_projet
+## Description
 
-Ce projet consiste à développer une application de vente en ligne pour l'entreprise Breizhsport, en utilisant Flask et MongoDB. Il est conçu pour fonctionner avec Docker afin de faciliter le déploiement et l'intégration continue (CI/CD).
+Ce projet utilise une architecture microservices pour gérer différentes fonctionnalités liées à Breizhsport. L'application est composée de trois services distincts :
 
-## Table des matières
+1. **auth_service** : Gestion des utilisateurs (inscription, authentification, validation de jeton).
+2. **product_service** : Gestion des produits et du panier.
+3. **frontend_service** : Interface utilisateur pour afficher les produits.
 
-- [Prérequis](#prérequis)
-- [Installation](#installation)
-- [Structure du projet](#structure-du-projet)
-- [Qualité du Code avec SonarLint et SonarCloud](#qualité-du-code-avec-sonarlint-et-sonarcloud)
-- [Guide pour les contributions](#guide-pour-les-contributions)
+L'ensemble du projet est conteneurisé avec Docker, ce qui facilite le déploiement et les tests en local.
 
----
+## Prérequis
 
-### Prérequis
+- Docker et Docker Compose doivent être installés sur votre machine.
+- Python 3.10 ou plus récent.
 
-- **Docker** et **Docker Compose** installés sur votre machine.
-- Accès à un terminal/commande pour exécuter les commandes de clonage et de lancement du projet.
+## Structure du Projet
 
-### Installation
+```
+CESI_Superviser_dev_app/
+├── auth_service/
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── requirements.txt
+│   └── test_auth_service.py
+├── product_service/
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── requirements.txt
+│   └── test_product_service.py
+├── frontend_service/
+│   ├── Dockerfile
+│   ├── main.py
+│   ├── templates/
+│   │   └── index.html
+│   ├── requirements.txt
+│   └── test/test_app.py
+└── docker-compose.yml
+```
 
-1. **Cloner le dépôt**
+## Installation
+
+1. Clonez le dépôt :
 
    ```bash
-   git clone https://github.com/BastienLopez/CESI_Superviser_dev_app.git
+   git clone https://github.com/votre-utilisateur/CESI_Superviser_dev_app.git
    cd CESI_Superviser_dev_app
    ```
 
-2. **Construire et lancer le projet avec Docker Compose**
+2. Construisez les images Docker et démarrez les conteneurs :
 
    ```bash
-   docker-compose up --build
+   docker compose up --build
    ```
 
-3. **Accéder à l'application**
-   Ouvrez votre navigateur et rendez-vous sur [http://localhost:8000](http://localhost:8000).
+   Cette commande démarre les services `auth_service`, `product_service`, `frontend_service` ainsi que MongoDB.
 
----
+## Accéder à l'application
 
-### Structure du projet
+L'interface utilisateur est accessible à l'adresse suivante :
 
-Voici la structure des dossiers et fichiers principaux du projet, avec une explication de leur rôle.
-
-```plaintext
-/project-root
-|-- app/
-|   |-- main.py            # Fichier principal Python qui lance l'application Flask
-|   |-- templates/
-|       |-- index.html     # Page HTML affichée à l'accueil de l'application
-|
-|-- docker/
-|   # Ce dossier peut contenir des fichiers Docker supplémentaires, par exemple pour des configurations spécifiques
-|
-|-- tests/                 # Emplacement prévu pour les tests (fichiers à ajouter)
-|
-|-- docker-compose.yml     # Configuration Docker Compose pour orchestrer les services (app et db)
-|-- Dockerfile             # Fichier Docker pour l'image de l'application Flask
-|-- requirements.txt       # Fichier des dépendances Python nécessaires au projet
-|-- README.md              # Documentation du projet (ce fichier)
+```
+http://localhost:8000
 ```
 
----
+## Tests
 
-### Qualité du Code avec SonarLint et SonarCloud
+Vous pouvez exécuter des tests pour chaque service individuellement en utilisant les commandes suivantes :
 
-Pour garantir la qualité du code et respecter les bonnes pratiques de développement, nous utilisons **SonarLint** pour l'analyse en temps réel dans l'éditeur, et **SonarCloud** pour l'analyse continue dans les workflows CI/CD.
+### Exécuter les tests pour `auth_service`
 
-#### SonarLint
+```bash
+docker compose run --rm auth_service pytest
+```
 
-SonarLint est configuré pour analyser le code localement en temps réel dans **Visual Studio Code (VS Code)** :
+### Exécuter les tests pour `product_service`
 
-1. **Installer l'extension SonarLint** dans VS Code (disponible dans le menu des extensions).
-2. **Exécuter une analyse manuelle** en ouvrant la palette de commandes (`Ctrl+Shift+P` ou `Cmd+Shift+P` sur macOS) et en choisissant **SonarLint: Run All Analysis**.
-3. SonarLint identifiera les problèmes directement dans le panneau "Problems" de VS Code.
+```bash
+docker compose run --rm product_service pytest
+```
 
-#### SonarCloud
+### Exécuter les tests pour `frontend_service`
 
-SonarCloud est intégré avec GitHub Actions pour une analyse continue de la qualité du code :
+```bash
+docker compose run --rm frontend_service pytest
+```
 
-1. Les fichiers de configuration pour SonarCloud sont situés dans le dossier `.github/workflows`.
-2. Chaque **push** ou **pull request** déclenche une analyse SonarCloud, vérifiant la qualité du code selon les règles configurées dans le projet SonarCloud.
-3. Les résultats peuvent être consultés sur le tableau de bord SonarCloud pour le projet.
+### Explication des tests
 
----
+- **auth_service** : Vérifie l'inscription et l'authentification des utilisateurs.
+- **product_service** : Vérifie la gestion des produits et du panier.
+- **frontend_service** : Vérifie que la page d'accueil affiche correctement les produits.
 
-### Guide pour les contributions
+## Nettoyer les conteneurs
 
-Le travail est réparti entre trois personnes. Voici les différentes tâches et où concentrer les modifications :
+Pour arrêter tous les services et nettoyer les conteneurs, utilisez la commande suivante :
 
-#### 1. **Développeur 1 : Backend & API**
+```bash
+docker compose down
+```
 
-- Travailler principalement dans `app/main.py` pour ajouter des routes Flask supplémentaires ou des fonctionnalités backend.
-- **Tests** : Préparer le fichier de tests (par exemple, `tests/test_app.py`) pour tester les routes et fonctionnalités du backend.
-- Pour lancer les tests : `docker compose run test`
+## Dépannage
 
-#### 2. **Développeur 2 : Frontend (HTML et intégration Flask)**
+Si vous rencontrez des problèmes avec Docker, essayez de reconstruire les conteneurs :
 
-- Travailler sur les templates HTML dans `app/templates/`. Le fichier `index.html` peut être enrichi avec des éléments supplémentaires ou de nouveaux fichiers HTML peuvent être ajoutés pour d'autres routes.
-- **Tests** : Vérifier l'affichage des pages et s'assurer que les liens et formulaires fonctionnent correctement.
-- Pour lancer les tests : `docker compose run test`
-
-#### 3. **Développeur 3 : Docker et CI/CD**
-
-- Gérer les configurations Docker dans `Dockerfile` et `docker-compose.yml`. Optimiser les fichiers pour garantir que l’application démarre correctement et que les connexions sont fluides entre les services.
-- Ajouter ou configurer les workflows CI/CD dans `.github/workflows/test.yml` pour les tests et `.github/workflows/sonarcloud.yml` pour l’analyse de la qualité du code via SonarCloud.
-- **Tests** : S'assurer que les services démarrent sans erreur, et vérifier que le pipeline CI/CD s’exécute correctement sur chaque commit ou pull request.
-
----
+```bash
+docker compose up --build --force-recreate
+```
