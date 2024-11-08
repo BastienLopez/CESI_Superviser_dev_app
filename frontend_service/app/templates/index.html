@@ -7,30 +7,23 @@
   </head>
   <body>
     <h1>Catalogue de Produits</h1>
-    <p>Ca dit quoi l'équipe ?</p>
-    <div id="authStatus"></div>
+    <div id="auth-status"></div>
     <div id="products"></div>
 
     <script>
-      // Appel à l'API pour récupérer l'état de l'authentification et les produits
-      fetch("http://localhost:8000/api/data")
+      // Récupérer les données depuis l'API
+      fetch("/api/data")
         .then((response) => response.json())
         .then((data) => {
-          // Mise à jour de l'état d'authentification
-          const authStatusDiv = document.getElementById("authStatus");
-          authStatusDiv.innerHTML = `<p>Statut d'authentification : ${data.auth_status}</p>`;
+          const authStatusDiv = document.getElementById("auth-status");
+          authStatusDiv.textContent = `Statut d'authentification: ${data.auth_status}`;
 
-          // Mise à jour de la liste de produits
           const productsDiv = document.getElementById("products");
-          if (data.products && data.products.length > 0) {
-            data.products.forEach((product) => {
-              const productDiv = document.createElement("div");
-              productDiv.innerHTML = `<h3>${product.name}</h3><p>${product.price} €</p>`;
-              productsDiv.appendChild(productDiv);
-            });
-          } else {
-            productsDiv.innerHTML = "<p>Aucun produit disponible.</p>";
-          }
+          data.products.forEach((product) => {
+            const productDiv = document.createElement("div");
+            productDiv.innerHTML = `<h3>${product.name}</h3><p>${product.price} €</p>`;
+            productsDiv.appendChild(productDiv);
+          });
         })
         .catch((error) =>
           console.error("Erreur lors de la récupération des données:", error)
