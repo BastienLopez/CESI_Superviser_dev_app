@@ -4,3 +4,4 @@ docker
 pymongo==4.3.3
 PyJWT==2.6.0
 bcrypt
+pytest

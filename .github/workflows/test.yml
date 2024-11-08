@@ -22,7 +22,7 @@ jobs:
       - name: Build Docker services
         run: docker compose up -d --build
 
-      # Lancer les tests pour chaque service individuellement
+      # Lancer les tests pour chaque service
       - name: Run tests for auth_service
         run: docker compose run --rm auth_service pytest
 
