@@ -1736,13 +1736,6 @@ video {
     }
 }
 
-html {
-    font-family: Urbanist, sans-serif !important
-}
-
-body {
-    margin: 0
-}
 
 #toggle_nav:where(.astro-UY3JLCBK):checked~div:where(.astro-UY3JLCBK) #hamburger:where(.astro-UY3JLCBK) #line:where(.astro-UY3JLCBK) {
     --tw-translate-y: .375rem;
