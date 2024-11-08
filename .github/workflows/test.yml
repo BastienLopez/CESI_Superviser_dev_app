@@ -1,7 +1,6 @@
 name: Docker Test Workflow
 
 on:
-  workflow_dispatch: # Permet d'exécuter manuellement le workflow
   push:
     branches:
       - "**"
@@ -12,16 +11,27 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+        uses: docker/setup-buildx-action@v2
 
-      - name: Build and Run tests with Docker Compose
-        run: docker compose up --build --abort-on-container-exit
+      - name: Build Docker services
+        run: docker compose up -d --build
 
-      - name: Clean up
+      # Lancer les tests pour chaque service individuellement
+      - name: Run tests for auth_service
+        run: docker compose run --rm auth_service pytest
+
+      - name: Run tests for product_service
+        run: docker compose run --rm product_service pytest
+
+      - name: Run tests for frontend_service
+        run: docker compose run --rm frontend_service pytest
+
+      - name: Clean up Docker
         if: always()
         run: docker compose down
