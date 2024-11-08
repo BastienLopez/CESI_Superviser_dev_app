@@ -1,6 +1,7 @@
 name: Docker Test Workflow
 
 on:
+  workflow_dispatch: # Permet d'exécuter manuellement le workflow
   push:
     branches:
       - "**"
@@ -10,11 +11,15 @@ on:
 
 jobs:
   test:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Build and Run tests
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Build and Run tests with Docker Compose
         run: docker compose up --build --abort-on-container-exit
 
       - name: Clean up
