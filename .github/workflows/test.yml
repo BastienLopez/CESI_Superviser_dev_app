@@ -10,36 +10,13 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-
     steps:
-      # 1. Checkout du code
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. Installer Docker et Docker Compose
-      - name: Set up Docker
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y ca-certificates curl gnupg lsb-release
-          # Créer un répertoire pour les clés
-          sudo mkdir -p /etc/apt/keyrings
-          # Télécharger et ajouter la nouvelle clé GPG
-          curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo tee /etc/apt/keyrings/docker.gpg > /dev/null
-          sudo chmod a+r /etc/apt/keyrings/docker.gpg
-          # Ajouter le dépôt Docker
-          echo \
-            "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-            $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-          # Mettre à jour et installer Docker Compose
-          sudo apt-get update
-          sudo apt-get install -y docker-compose-plugin
-
-      # 3. Construire et exécuter les conteneurs avec Docker Compose
-      - name: Build and Run tests with Docker Compose
+      - name: Build and Run tests
         run: docker compose up --build --abort-on-container-exit
 
-      # 4. Nettoyer les conteneurs après les tests
       - name: Clean up
         if: always()
         run: docker compose down
