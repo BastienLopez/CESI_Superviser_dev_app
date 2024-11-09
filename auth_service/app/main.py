@@ -1,19 +1,34 @@
 from flask import Flask, request, jsonify
-from pymongo import MongoClient
+from pymongo import MongoClient, errors
 import jwt
 import bcrypt
 import os
 
 app = Flask(__name__)
-mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo:27017/authdb")
-client = MongoClient(mongo_uri)
-db = client["authdb"]
-users_collection = db["users"]
+
+# Connexion à MongoDB
+mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo-auth:27017/authdb")
+try:
+    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
+    db = client["authdb"]
+    users_collection = db["users"]
+    client.admin.command('ping')  # Vérifie la connexion
+    print("Connecté à MongoDB avec succès")
+except errors.ServerSelectionTimeoutError as err:
+    print("Erreur de connexion à MongoDB:", err)
+    db = None
 
 SECRET_KEY = "secret_key"
 
+@app.route("/health", methods=["GET"])
+def health_check():
+    return jsonify({"status": "up"}), 200
+
 @app.route("/auth/signup", methods=["POST"])
 def signup():
+    if db is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
     data = request.json
     username = data.get("username")
     password = data.get("password")
@@ -30,6 +45,9 @@ def signup():
 
 @app.route("/auth/login", methods=["POST"])
 def login():
+    if db is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
     data = request.json
     username = data.get("username")
     password = data.get("password")

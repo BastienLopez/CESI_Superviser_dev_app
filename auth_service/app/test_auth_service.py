@@ -1,5 +1,9 @@
 import unittest
 from main import app, users_collection
+import requests
+import os
+
+AUTH_SERVICE_URL = os.getenv("AUTH_SERVICE_URL", "http://auth_service:8001")
 
 class TestAuthService(unittest.TestCase):
 
@@ -9,15 +13,29 @@ class TestAuthService(unittest.TestCase):
         users_collection.delete_many({})
 
     def test_register(self):
-        response = self.client.post('/auth/signup', json={"username": "test", "password": "test123"})
+        response = self.client.post('/auth/signup', json={"username": "testuser", "password": "testpass"})
         self.assertEqual(response.status_code, 201)
 
     def test_register_duplicate(self):
-        # Enregistrer un utilisateur pour la première fois
-        self.client.post('/auth/signup', json={"username": "test", "password": "test123"})
-        # Essayer de l'enregistrer à nouveau
-        response = self.client.post('/auth/signup', json={"username": "test", "password": "test123"})
+        self.client.post('/auth/signup', json={"username": "testuser", "password": "testpass"})
+        response = self.client.post('/auth/signup', json={"username": "testuser", "password": "testpass"})
         self.assertEqual(response.status_code, 409)
+
+    def test_login(self):
+        self.client.post('/auth/signup', json={"username": "testuser", "password": "testpass"})
+        response = self.client.post('/auth/login', json={"username": "testuser", "password": "testpass"})
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("token", response.json)
+
+    def test_validate_token(self):
+        signup_response = self.client.post('/auth/signup', json={"username": "testuser", "password": "testpass"})
+        login_response = self.client.post('/auth/login', json={"username": "testuser", "password": "testpass"})
+        token = login_response.json["token"]
+        
+        headers = {"Authorization": token}
+        validate_response = self.client.get('/auth/validate', headers=headers)
+        self.assertEqual(validate_response.status_code, 200)
+        self.assertEqual(validate_response.json["status"], "valid")
 
 if __name__ == "__main__":
     unittest.main()
