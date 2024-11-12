@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-# Connexion à MongoDB (assurez-vous que ce port et cette URI correspondent au docker-compose)
+# Connexion à MongoDB
 client = MongoClient("mongodb://mongo-product:27017/")
 db = client["productdb"]
 
@@ -16,7 +16,7 @@ def setup_product_db():
     # Insertion de produits de test
     sample_products = [
         {"product_id": "1", "name": "Chaussures de sport", "price": 49.99},
-        {"product_id": "2", "name": "T-shirt", "price": 19.99},
+        {"product_id": "2", "name": "Collation", "price": 19.99},  # Modification ici
         {"product_id": "3", "name": "Casquette", "price": 14.99},
         {"product_id": "4", "name": "Sac à dos", "price": 29.99}
     ]

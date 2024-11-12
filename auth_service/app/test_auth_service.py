@@ -37,5 +37,12 @@ class TestAuthService(unittest.TestCase):
         self.assertEqual(validate_response.status_code, 200)
         self.assertEqual(validate_response.json["status"], "valid")
 
+    def test_auth_service_communication(self):
+        response = self.client.get('/health')
+        self.assertEqual(response.status_code, 200)
+        self.assertIn("auth_service", response.json)
+        self.assertTrue(response.json["auth_service"])
+
+
 if __name__ == "__main__":
     unittest.main()

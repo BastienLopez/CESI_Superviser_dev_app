@@ -13,11 +13,10 @@ def setup_auth_db():
     # Supprimer les utilisateurs existants pour éviter les doublons lors de chaque exécution
     users_collection.delete_many({})
     
-    # Ajouter des utilisateurs de test avec le hashage des mots de passe
+    # Ajouter des utilisateurs de test
     sample_users = [
         {"username": "user1", "password": bcrypt.hashpw("password1".encode("utf-8"), bcrypt.gensalt())},
         {"username": "user2", "password": bcrypt.hashpw("password2".encode("utf-8"), bcrypt.gensalt())},
-        {"username": "user3", "password": bcrypt.hashpw("password3".encode("utf-8"), bcrypt.gensalt())},
         {"username": "admin", "password": bcrypt.hashpw("adminpass".encode("utf-8"), bcrypt.gensalt())}
     ]
     

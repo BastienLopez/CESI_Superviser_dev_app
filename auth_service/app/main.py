@@ -12,17 +12,13 @@ try:
     client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
     db = client["authdb"]
     users_collection = db["users"]
-    client.admin.command('ping')  # Vérifie la connexion
+    client.admin.command('ping')
     print("Connecté à MongoDB avec succès")
 except errors.ServerSelectionTimeoutError as err:
     print("Erreur de connexion à MongoDB:", err)
     db = None
 
 SECRET_KEY = "secret_key"
-
-@app.route("/health", methods=["GET"])
-def health_check():
-    return jsonify({"status": "up"}), 200
 
 @app.route("/auth/signup", methods=["POST"])
 def signup():
@@ -64,17 +60,28 @@ def login():
 
 @app.route("/auth/validate", methods=["GET"])
 def validate():
+    if db is None:
+        return jsonify({"error": "Database connection failed"}), 500
+
     token = request.headers.get("Authorization")
     if not token:
         return jsonify({"error": "Token is missing"}), 400
 
     try:
-        jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return jsonify({"status": "valid"}), 200
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        return jsonify({"status": "valid", "user_id": decoded["user_id"]}), 200
     except jwt.ExpiredSignatureError:
-        return jsonify({"status": "expired"}), 401
+        return jsonify({"error": "Token has expired"}), 401
     except jwt.InvalidTokenError:
-        return jsonify({"status": "invalid"}), 401
+        return jsonify({"error": "Invalid token"}), 401
+
+@app.route("/health", methods=["GET"])
+def health_check():
+    """Endpoint pour vérifier la santé du service d'authentification"""
+    if db is None:
+        return jsonify({"auth_service": False}), 500
+    return jsonify({"auth_service": True}), 200
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8001)
