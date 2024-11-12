@@ -1,0 +1,21 @@
+# Caches Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Cache pytest
+*.pytest_cache/
+
+# Fichiers log générés
+*.log
+
+# Config VSCode (facultatif)
+.vscode/
+
+# Fichiers système
+.DS_Store
+Thumbs.db
+
+# Fichiers temporaires
+*.swp
