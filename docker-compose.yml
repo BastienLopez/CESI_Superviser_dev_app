@@ -7,6 +7,8 @@ services:
       MONGO_INITDB_DATABASE: authdb
     volumes:
       - auth_data:/data/db
+    ports:
+      - "27017:27017"  # Expose MongoDB auth sur localhost pour VSCode/Compass
     networks:
       - backend
 
@@ -35,6 +37,8 @@ services:
       MONGO_INITDB_DATABASE: productdb
     volumes:
       - product_data:/data/db
+    ports:
+      - "27018:27017"  # Expose MongoDB product sur localhost pour VSCode/Compass
     networks:
       - backend
 

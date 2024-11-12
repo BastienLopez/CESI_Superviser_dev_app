@@ -100,6 +100,19 @@ Pour arrêter tous les services et nettoyer les conteneurs, utilisez la commande
 docker compose down
 ```
 
+## Visualisation des bases de données dans VS Code
+
+Pour visualiser les bases de données `authdb` et `productdb` avec l'extension MongoDB de VS Code, suivez les étapes ci-dessous :
+
+1. Ouvrez l'extension MongoDB dans VS Code.
+2. Cliquez sur le bouton `+` pour ajouter une nouvelle connexion.
+3. Sélectionnez "Open Form" pour entrer l'URL de connexion manuellement.
+4. Utilisez les URL suivantes pour chaque base de données :
+   - **authdb** : `mongodb://localhost:27017/authdb`
+   - **productdb** : `mongodb://localhost:27018/productdb`
+5. Cliquez sur "Connect" pour vous connecter à chaque base de données.
+
+
 ## Dépannage
 
 Si vous rencontrez des problèmes avec Docker, essayez de reconstruire les conteneurs :
