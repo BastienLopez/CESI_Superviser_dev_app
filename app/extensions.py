@@ -1,6 +1,4 @@
-from pymongo import MongoClient
-import os
+from flask_pymongo import PyMongo
 
-# Initialiser l'instance MongoDB ici
-mongo_client = MongoClient(os.getenv("MONGO_URI", "mongodb://27017:27017"))
-db = mongo_client["mongo-1"]
+# Initialise une instance de PyMongo, sans connecter directement
+mongo = PyMongo()
