@@ -1,0 +1,47 @@
+name: Déploiement Production
+
+on:
+  push:
+    tags:
+      - "*-production" # Déclenchement uniquement pour les tags se terminant par '-production'
+
+jobs:
+  deploy:
+    name: Déploiement en Production
+    runs-on: ubuntu-latest
+
+    steps:
+      # Étape 1 : Cloner le dépôt
+      - name: Checkout du code
+        uses: actions/checkout@v2
+
+      # Étape 2 : Configurer les variables d'environnement
+      - name: Configuration des variables d'environnement
+        env:
+          ENV: production
+
+      # Étape 3 : Connexion SSH et déploiement sur le serveur de production
+      - name: Déployer sur le serveur de production
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_PATH: ${{ secrets.SERVER_PATH }}
+        run: |
+          # Ajouter la clé privée SSH pour établir la connexion
+          echo "$SSH_PRIVATE_KEY" > deploy_key
+          chmod 600 deploy_key
+          ssh-add deploy_key
+
+          # Accéder au serveur et exécuter les commandes Docker Compose
+          ssh -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_HOST << EOF
+            cd $SERVER_PATH
+            git pull
+            docker-compose down
+            docker-compose pull
+            docker-compose up -d --build
+          EOF
+
+      # Étape 4 : Confirmer le déploiement
+      - name: Confirmer le déploiement
+        run: echo "Déploiement terminé pour le tag $GITHUB_REF"
