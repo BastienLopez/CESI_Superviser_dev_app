@@ -3,10 +3,12 @@ from main import app, db
 from pymongo import MongoClient
 import os
 
+
 class TestProductService(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo-product:27017/productdb")
+
         cls.client_db = MongoClient(mongo_uri)
         cls.db = cls.client_db["productdb"]
 
@@ -34,8 +36,9 @@ class TestProductService(unittest.TestCase):
         self.assertEqual(len(response.json["products"]), 2)
 
     def test_add_to_cart(self):
-        response = self.client.post('/cart', json={"product_id": "1", "name": "Collation", "price": 19.99})  # Modification ici
-        self.assertEqual(response.status_code, 201)
+        response = self.client.post('/cart',
+                                    json={"product_id": "1", "name": "Collation", "price": 19.99})  # Modification ici
+        self.assertEqual(201, response.status_code)
         self.assertIn("message", response.json)
         self.assertEqual(response.json["message"], "Product added to cart")
 
@@ -48,6 +51,7 @@ class TestProductService(unittest.TestCase):
         response = self.client.get('/products')
         self.assertEqual(response.status_code, 200)
         self.assertIn("products", response.json)
+
 
 if __name__ == "__main__":
     unittest.main()

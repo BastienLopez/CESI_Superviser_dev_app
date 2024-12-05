@@ -3,6 +3,8 @@ Werkzeug==2.2.3
 docker
 pymongo==4.3.3
 PyJWT==2.6.0
-bcrypt
+bcrypt~=4.2.0
 pytest
-requests
+requests~=2.32.3
+mongoengine~=0.29.1
+flask-mongoengine

@@ -1,49 +1,46 @@
 from flask import Flask, request, jsonify
-from pymongo import MongoClient, errors
+from flask_mongoengine import MongoEngine
+from model.user import User  # Importation du modèle User
 import jwt
 import bcrypt
 import os
 
 app = Flask(__name__)
 
-# Connexion à MongoDB
-mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo-auth:27017/authdb")
-try:
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-    db = client["authdb"]
-    users_collection = db["users"]
-    client.admin.command('ping')
-    print("Connecté à MongoDB avec succès")
-except errors.ServerSelectionTimeoutError as err:
-    print("Erreur de connexion à MongoDB:", err)
-    db = None
+# Configuration de MongoDB
+app.config['MONGODB_SETTINGS'] = {
+    'db': 'authdb',
+    'host': 'mongo-auth',
+    'port': 27017
+}
+
+# Initialisation de MongoEngine
+db = MongoEngine(app)
 
 SECRET_KEY = "secret_key"
 
 @app.route("/auth/signup", methods=["POST"])
 def signup():
-    if db is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
     data = request.json
     username = data.get("username")
+    email = data.get("email")
     password = data.get("password")
 
-    if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
+    if not username or not email or not password:
+        return jsonify({"error": "Username, email, and password are required"}), 400
 
-    if users_collection.find_one({"username": username}):
+    # Vérifier si l'utilisateur existe déjà
+    if User.objects(username=username):
         return jsonify({"error": "User already exists"}), 409
 
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-    users_collection.insert_one({"username": username, "password": hashed_password})
+    user = User(username=username, email=email)
+    user.set_password(password)  # Hachage du mot de passe
+    user.save()
+
     return jsonify({"message": "User created successfully"}), 201
 
 @app.route("/auth/login", methods=["POST"])
 def login():
-    if db is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
     data = request.json
     username = data.get("username")
     password = data.get("password")
@@ -51,18 +48,15 @@ def login():
     if not username or not password:
         return jsonify({"error": "Username and password are required"}), 400
 
-    user = users_collection.find_one({"username": username})
-    if user and bcrypt.checkpw(password.encode("utf-8"), user["password"]):
-        token = jwt.encode({"user_id": str(user["_id"])}, SECRET_KEY, algorithm="HS256")
+    user = User.objects(username=username).first()
+    if user and user.check_password(password):  # Vérification du mot de passe
+        token = jwt.encode({"user_id": str(user.id)}, SECRET_KEY, algorithm="HS256")
         return jsonify({"token": token}), 200
     else:
         return jsonify({"error": "Invalid credentials"}), 401
 
 @app.route("/auth/validate", methods=["GET"])
 def validate():
-    if db is None:
-        return jsonify({"error": "Database connection failed"}), 500
-
     token = request.headers.get("Authorization")
     if not token:
         return jsonify({"error": "Token is missing"}), 400
@@ -77,7 +71,6 @@ def validate():
 
 @app.route("/health", methods=["GET"])
 def health_check():
-    """Endpoint pour vérifier la santé du service d'authentification"""
     if db is None:
         return jsonify({"auth_service": False}), 500
     return jsonify({"auth_service": True}), 200

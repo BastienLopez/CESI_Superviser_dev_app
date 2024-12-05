@@ -4,6 +4,7 @@ import os
 
 # Connexion à la base de données MongoDB
 mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo-auth:27017/authdb")
+
 client = MongoClient(mongo_uri)
 db = client["authdb"]
 

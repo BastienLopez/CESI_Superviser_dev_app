@@ -78,6 +78,8 @@ docker compose run --rm auth_service pytest
 
 ```bash
 docker compose run --rm product_service pytest
+docker compose run --rm product_service/app/test/test_main.py
+
 ```
 
 ### Exécuter les tests pour `frontend_service`
