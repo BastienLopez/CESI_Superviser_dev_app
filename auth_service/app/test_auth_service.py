@@ -1,5 +1,5 @@
 import unittest
-from main import app, users_collection
+from main import app
 import requests
 import os
 

@@ -1,7 +1,7 @@
 from unittest.mock import patch
 import pytest
 from ..model.cart import Cart
-from ..model.product import Product
+from ..model.product import Products
 
 
 @pytest.fixture

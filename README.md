@@ -100,6 +100,8 @@ Pour arrêter tous les services et nettoyer les conteneurs, utilisez la commande
 
 ```bash
 docker compose down
+docker compose down --volumes --rmi all
+
 ```
 
 ## Visualisation des bases de données dans VS Code
@@ -122,3 +124,22 @@ Si vous rencontrez des problèmes avec Docker, essayez de reconstruire les conte
 ```bash
 docker compose up --build --force-recreate
 ```
+
+
+```bash
+docker exec -it mongo-auth bash
+mongosh
+use authdb;
+db.users.find();
+db.users.find().pretty();
+```
+
+```bash
+docker exec -it mongo-product bash
+mongosh
+use productdb;
+db.products.find();
+db.products.find().pretty();
+```
+
+

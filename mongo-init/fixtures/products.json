@@ -1,0 +1,14 @@
+{
+  "name": "Product A",
+  "description": "Description A",
+  "price": 10.99,
+  "image": "image_a.jpg",
+  "storage_quantity": 100
+}
+{
+  "name": "Product B",
+  "description": "Description B",
+  "price": 15.49,
+  "image": "image_b.jpg",
+  "storage_quantity": 50
+}

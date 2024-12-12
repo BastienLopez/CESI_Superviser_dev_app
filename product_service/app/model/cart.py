@@ -1,10 +1,10 @@
 from mongoengine import Document, SequenceField, IntField, ReferenceField
-from .product import Product  # Assurez-vous que le modèle Product est importé
+from .product import Products  # Assurez-vous que le modèle Product est importé
 
 class Cart(Document):
     id = SequenceField(primary_key=True)
     id_user = IntField(required=True)  # ID de l'utilisateur (pas une référence Mongo)
-    id_product = ReferenceField(Product, required=True)  # Référence vers le modèle Product
+    id_product = ReferenceField(Products, required=True)  # Référence vers le modèle Product
     quantity = IntField(required=True, min_value=1)
 
     def __repr__(self):

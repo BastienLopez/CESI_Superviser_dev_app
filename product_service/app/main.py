@@ -4,22 +4,27 @@ import requests  # Importation de requests pour effectuer les appels HTTP
 from mongoengine import DoesNotExist  # Importation de l'exception DoesNotExist
 
 from model.cart import Cart
-from model.product import Product
+from model.product import Products
+
 
 app = Flask(__name__)
 app.config['MONGODB_SETTINGS'] = {
     'db': 'productdb',
-    'host': 'mongo-product',
-    'port': 27017
+    'host': 'mongo-product',  # Nom du service MongoDB dans Docker
+    'port': 27017,  # Port de MongoDB
+    'username': 'root',  # Nom d'utilisateur MongoDB
+    'password': 'example',  # Mot de passe MongoDB
+    'authentication_source': 'admin'  # Base de données où les infos d'authentification sont stockées
 }
 db = MongoEngine(app)
 
 # URL de l'API de auth_service (mettre l'URL correcte)
 AUTH_SERVICE_URL = "http://auth_service:8001"
 
+
 @app.route("/products", methods=["GET"])
 def get_products():
-    products = Product.objects()
+    products = Products.objects()
     response = [
         {
             "id": str(product.id),
@@ -32,6 +37,7 @@ def get_products():
         for product in products
     ]
     return jsonify({"products": response}), 200
+
 
 @app.route("/cart", methods=["POST"])
 def add_to_cart():
@@ -51,7 +57,7 @@ def add_to_cart():
 
         # Recherche du produit
         try:
-            product = Product.objects.get(id=data["id_product"])
+            product = Products.objects.get(id=data["id_product"])
         except DoesNotExist:
             return jsonify({"error": "Product not found"}), 404
 
@@ -75,7 +81,7 @@ def view_cart():
     cart_items = Cart.objects()
     response = [
         {
-            "user": str(item.id_user["username"]),  # 'username' champ de données utilisateur
+            "user": str(item.id_user.username) if item.id_user else "Unknown",  # Correction de l'accès à 'username'
             "product": str(item.id_product.name),
             "quantity": item.quantity,
             "total_price": item.quantity * item.id_product.price
@@ -83,6 +89,7 @@ def view_cart():
         for item in cart_items
     ]
     return jsonify({"cart": response}), 200
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=8002)

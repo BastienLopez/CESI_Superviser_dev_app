@@ -1,7 +1,8 @@
 import mongoengine as db
 import bcrypt
 
-class User(db.Document):
+
+class Users(db.Document):
     username = db.StringField(required=True, unique=True, max_length=80)
     email = db.EmailField(required=True, unique=True)
     password = db.StringField(required=True, min_length=6)

@@ -44,19 +44,19 @@ def setup_data():
     """
     Adds data to the MongoMock database for testing
     """
-    from product_service.app.model.product import Product
+    from product_service.app.model.product import Products
     from product_service.app.model.cart import Cart
-    from auth_service.app.model.user import User
+    from auth_service.app.model.user import Users
 
     # Ensure the database is clean before adding new test data
-    User.objects(username="testuser").delete()
+    Users.objects(username="testuser").delete()
 
     # Add the test user
-    user = User(username="testuser", email="testuser@example.com", password="password123")
+    user = Users(username="testuser", email="testuser@example.com", password="password123")
     user.save()
 
     # Add other necessary setup data
-    product = Product(name="Test Product", price=10, storage_quantity=100)
+    product = Products(name="Test Product", price=10, storage_quantity=100)
     product.save()
 
     cart = Cart(user=user, products=[product], created_at=datetime.now())

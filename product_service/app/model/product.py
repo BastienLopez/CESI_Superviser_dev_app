@@ -1,7 +1,7 @@
 import mongoengine as db
 
 
-class Product(db.Document):
+class Products(db.Document):
     id = db.SequenceField(primary_key=True)
     name = db.StringField(required=True, max_length=100)
     description = db.StringField()
