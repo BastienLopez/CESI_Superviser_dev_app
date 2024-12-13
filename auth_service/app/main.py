@@ -1,9 +1,26 @@
 from flask import Flask, request, jsonify
 from flask_mongoengine import MongoEngine
-from model.user import Users  # Importation du modèle User
 import jwt
+import mongoengine as me
 import bcrypt
-import os
+
+
+class Users(me.Document):
+    username = me.StringField(required=True, unique=True, max_length=80)
+    email = me.EmailField(required=True, unique=True)
+    password = me.StringField(required=True, min_length=6)
+
+    # Méthode pour hacher le mot de passe avant de l'enregistrer
+    def set_password(self, password):
+        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    # Méthode pour vérifier le mot de passe
+    def check_password(self, password):
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
+
+    def __repr__(self):
+        return f'<User {self.username}>'
+
 
 app = Flask(__name__)
 

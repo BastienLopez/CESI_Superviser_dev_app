@@ -1,10 +1,33 @@
+import base64
+
 from flask import Flask, request, jsonify
 from flask_mongoengine import MongoEngine
 import requests  # Importation de requests pour effectuer les appels HTTP
 from mongoengine import DoesNotExist  # Importation de l'exception DoesNotExist
+from mongoengine import Document, SequenceField, IntField, ReferenceField
+import mongoengine as db
 
-from model.cart import Cart
-from model.product import Products
+
+class Products(db.Document):
+    id = db.ObjectIdField(primary_key=True)
+    name = db.StringField(required=True, max_length=100)
+    description = db.StringField()
+    price = db.FloatField(required=True)
+    image = db.BinaryField()
+    storage_quantity = db.IntField(required=True)
+
+    def __repr__(self):
+        return f'<Product {self.name}>'
+
+
+class Cart(Document):
+    id = SequenceField(primary_key=True)
+    id_user = IntField(required=True)  # ID de l'utilisateur (pas une référence Mongo)
+    id_product = ReferenceField(Products, required=True)  # Référence vers le modèle Product
+    quantity = IntField(required=True, min_value=1)
+
+    def __repr__(self):
+        return f'<Cart User ID: {self.id_user}, Product: {self.id_product.name}, Quantity: {self.quantity}>'
 
 
 app = Flask(__name__)
@@ -22,6 +45,36 @@ db = MongoEngine(app)
 AUTH_SERVICE_URL = "http://auth_service:8001"
 
 
+# @app.route("/products/<string:product_id>/image", methods=["POST"])
+# def upload_product_image(product_id):
+#     file = request.files.get('image')
+#     if not file:
+#         return jsonify({"error": "No image file provided"}), 400
+#
+#     try:
+#         product = Products.objects.get(id=product_id)
+#         product.image = file.read()  # Lire les données binaires du fichier
+#         product.save()
+#         return jsonify({"message": "Image uploaded successfully"}), 200
+#     except DoesNotExist:
+#         return jsonify({"error": "Product not found"}), 404
+
+@app.route("/products/<product_id>/image", methods=["GET"])
+def get_product_image(product_id):
+    try:
+        product = Products.objects.get(id=product_id)
+        if not product.image:
+            return jsonify({"error": "No image available for this product"}), 404
+
+        # Si l'image est en Base64, nous devons la décoder en binaire
+        image_data = base64.b64decode(product.image)
+
+        # Retourne l'image sous forme de réponse HTTP avec le type MIME approprié
+        return app.response_class(image_data, content_type="image/png"), 200
+    except DoesNotExist:
+        return jsonify({"error": "Product not found"}), 404
+
+
 @app.route("/products", methods=["GET"])
 def get_products():
     products = Products.objects()
@@ -31,7 +84,7 @@ def get_products():
             "name": product.name,
             "description": product.description,
             "price": product.price,
-            "image": product.image,
+            "image": f"/products/{product.id}/image" if product.image else None,
             "storage_quantity": product.storage_quantity,
         }
         for product in products
