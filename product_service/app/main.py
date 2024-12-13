@@ -1,11 +1,15 @@
 import base64
 
+import jwt
 from flask import Flask, request, jsonify
 from flask_mongoengine import MongoEngine
 import requests  # Importation de requests pour effectuer les appels HTTP
 from mongoengine import DoesNotExist  # Importation de l'exception DoesNotExist
 from mongoengine import Document, SequenceField, IntField, ReferenceField
 import mongoengine as db
+
+SECRET_KEY = "secret_key"
+
 
 
 class Products(db.Document):
@@ -96,37 +100,48 @@ def get_products():
 def add_to_cart():
     data = request.json
 
-    if not data or not all(key in data for key in ["id_user", "id_product", "quantity"]):
+    if not data or not all(key in data for key in ["id_product", "quantity"]):
         return jsonify({"error": "Invalid data"}), 400
 
+    token = request.headers.get("Authorization")
+    if not token:
+        return jsonify({"error": "Token is missing"}), 400
+
     try:
-        # Appel à l'API auth_service pour obtenir les informations de l'utilisateur
-        user_response = requests.get(f"{AUTH_SERVICE_URL}/users/{data['id_user']}")
+        # Décoder le token pour récupérer l'ID de l'utilisateur
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = decoded["user_id"]
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token has expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Invalid token"}), 401
 
-        if user_response.status_code != 200:
-            return jsonify({"error": "User not found in auth_service"}), 404
+    # Appel à l'API auth_service pour obtenir les informations de l'utilisateur
+    user_response = requests.get(f"{AUTH_SERVICE_URL}/users/{user_id}")
 
-        user_data = user_response.json()  # Utilisation des données utilisateur récupérées
+    if user_response.status_code != 200:
+        return jsonify({"error": "User not found in auth_service"}), 404
 
-        # Recherche du produit
-        try:
-            product = Products.objects.get(id=data["id_product"])
-        except DoesNotExist:
-            return jsonify({"error": "Product not found"}), 404
+    user_data = user_response.json()  # Utilisation des données utilisateur récupérées
 
-        if product.storage_quantity < data["quantity"]:
-            return jsonify({"error": "Not enough stock available"}), 400
+    # Recherche du produit
+    try:
+        product = Products.objects.get(id=data["id_product"])
+    except DoesNotExist:
+        return jsonify({"error": "Product not found"}), 404
 
-        # Crée un élément de panier avec juste l'ID de l'utilisateur
-        cart_item = Cart(
-            id_user=data["id_user"],  # Juste l'ID de l'utilisateur
-            id_product=product,
-            quantity=data["quantity"]
-        )
-        cart_item.save()
-        return jsonify({"message": "Product added to cart"}), 201
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+    if product.storage_quantity < data["quantity"]:
+        return jsonify({"error": "Not enough stock available"}), 400
+
+    # Crée un élément de panier avec juste l'ID de l'utilisateur
+    cart_item = Cart(
+        id_user=user_id,  # Utilise l'ID de l'utilisateur décodé du token
+        id_product=product,
+        quantity=data["quantity"]
+    )
+    cart_item.save()
+    return jsonify({"message": "Product added to cart"}), 201
+
 
 
 @app.route("/cart", methods=["GET"])

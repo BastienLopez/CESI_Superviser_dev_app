@@ -142,4 +142,93 @@ db.products.find();
 db.products.find().pretty();
 ```
 
+request postman
+```bash  
+http://localhost:8002/products
 
+```
+Exemple de retour :
+{
+    "products": [
+        {
+            "description": "Comfortable running sneakers for everyday use.",
+            "id": "675c5d38e4de3534ea4800dc",
+            "image": "/products/675c5d38e4de3534ea4800dc/image",
+            "name": "Running Sneakers",
+            "price": 79.99,
+            "storage_quantity": 120
+        },
+        {
+            "description": "Comfortable Jogging for everyday use.",
+            "id": "675c5d38e4de3534ea4800dd",
+            "image": "/products/675c5d38e4de3534ea4800dd/image",
+            "name": "Jogging",
+            "price": 79.99,
+            "storage_quantity": 120
+        }
+    ]
+}
+
+```bash
+http://localhost:8001/health
+    
+```
+Exemple de retour :
+{
+    "auth_service": true
+}
+
+
+```bash
+http://localhost:8002/products/{id}/image
+    
+```  
+ {id} =  "id": "675c5d38e4de3534ea4800dc" de products
+
+```bash
+http://localhost:8001/auth/signup
+    
+```
+body:
+{
+  "username": "user",
+  "email": "user@example.com",
+  "password": "password"
+}
+retour :
+{
+    "message": "User created successfully"
+}
+
+```bash
+http://localhost:8001/auth/login
+        
+```
+body:
+{
+  "username": "user",
+  "password": "password"
+}
+retour :
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjc1YzVkNjY1NzgzYWEwODZhYTA5MTg5In0.eCXmxQ5S2cv0h2Of1l6x5MBWZwxwZ41MaHAxsGonJZI"
+}
+
+```bash
+http://localhost:8002/cart
+        
+```
+retour :
+{
+    "cart": []
+}
+
+Headers:
+Key: Authorization = token
+
+body:
+{
+  "product_id": "{id}",
+  "quantity": 1
+}
+{id} =  id product
