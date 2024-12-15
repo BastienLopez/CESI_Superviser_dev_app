@@ -1,16 +1,18 @@
 import base64
+import logging
 
 import jwt
 from flask import Flask, request, jsonify
 from flask_mongoengine import MongoEngine
 import requests  # Importation de requests pour effectuer les appels HTTP
-from mongoengine import DoesNotExist  # Importation de l'exception DoesNotExist
+from mongoengine import DoesNotExist, StringField, ValidationError  # Importation de l'exception DoesNotExist
 from mongoengine import Document, SequenceField, IntField, ReferenceField
 import mongoengine as db
 
 SECRET_KEY = "secret_key"
 
-
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 class Products(db.Document):
     id = db.ObjectIdField(primary_key=True)
@@ -26,7 +28,7 @@ class Products(db.Document):
 
 class Cart(Document):
     id = SequenceField(primary_key=True)
-    id_user = IntField(required=True)  # ID de l'utilisateur (pas une référence Mongo)
+    id_user = StringField(required=True)  # ID de l'utilisateur (pas une référence Mongo)
     id_product = ReferenceField(Products, required=True)  # Référence vers le modèle Product
     quantity = IntField(required=True, min_value=1)
 
@@ -62,6 +64,31 @@ AUTH_SERVICE_URL = "http://auth_service:8001"
 #         return jsonify({"message": "Image uploaded successfully"}), 200
 #     except DoesNotExist:
 #         return jsonify({"error": "Product not found"}), 404
+
+@app.route("/products/<product_id>", methods=["GET"])
+def get_product_by_id(product_id):
+    try:
+        # Recherche du produit par son ID
+        product = Products.objects.get(id=product_id)
+    except DoesNotExist:
+        # Gestion du cas où le produit n'est pas trouvé
+        return jsonify({"error": "Product not found"}), 404
+    except ValidationError:
+        # Gestion des erreurs liées à un format d'ID non valide
+        return jsonify({"error": "Invalid product ID format"}), 400
+
+    # Construction de la réponse
+    response = {
+        "id": str(product.id),
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
+        "image": f"/products/{product.id}/image" if product.image else None,
+        "storage_quantity": product.storage_quantity,
+    }
+
+    return jsonify({"product": response}), 200
+
 
 @app.route("/products/<product_id>/image", methods=["GET"])
 def get_product_image(product_id):
@@ -107,22 +134,17 @@ def add_to_cart():
     if not token:
         return jsonify({"error": "Token is missing"}), 400
 
-    try:
-        # Décoder le token pour récupérer l'ID de l'utilisateur
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        user_id = decoded["user_id"]
-    except jwt.ExpiredSignatureError:
-        return jsonify({"error": "Token has expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"error": "Invalid token"}), 401
+    # Appel à l'endpoint /auth/validate pour valider le token
+    validate_response = requests.get(f"{AUTH_SERVICE_URL}/auth/validate", headers={"Authorization": token})
 
-    # Appel à l'API auth_service pour obtenir les informations de l'utilisateur
-    user_response = requests.get(f"{AUTH_SERVICE_URL}/users/{user_id}")
+    if validate_response.status_code != 200:
+        return jsonify({"error": "Invalid or expired token"}), validate_response.status_code
 
-    if user_response.status_code != 200:
-        return jsonify({"error": "User not found in auth_service"}), 404
+    validation_data = validate_response.json()
+    user_id = validation_data.get("user_id")
 
-    user_data = user_response.json()  # Utilisation des données utilisateur récupérées
+    if not user_id:
+        return jsonify({"error": "User ID not found"}), 400
 
     # Recherche du produit
     try:
@@ -133,29 +155,61 @@ def add_to_cart():
     if product.storage_quantity < data["quantity"]:
         return jsonify({"error": "Not enough stock available"}), 400
 
-    # Crée un élément de panier avec juste l'ID de l'utilisateur
+    # Crée un élément de panier avec l'ID utilisateur validé
     cart_item = Cart(
-        id_user=user_id,  # Utilise l'ID de l'utilisateur décodé du token
+        id_user=user_id,
         id_product=product,
         quantity=data["quantity"]
     )
     cart_item.save()
-    return jsonify({"message": "Product added to cart"}), 201
 
+    return jsonify({"message": "Product added to cart"}), 201
 
 
 @app.route("/cart", methods=["GET"])
 def view_cart():
-    cart_items = Cart.objects()
-    response = [
-        {
-            "user": str(item.id_user.username) if item.id_user else "Unknown",  # Correction de l'accès à 'username'
-            "product": str(item.id_product.name),
+    # Récupérer le token Authorization
+    token = request.headers.get("Authorization")
+    if not token:
+        return jsonify({"error": "Token is missing"}), 400
+
+    try:
+        # Vérifier et décoder le token pour obtenir l'user_id
+        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+        user_id = decoded["user_id"]
+    except jwt.ExpiredSignatureError:
+        return jsonify({"error": "Token has expired"}), 401
+    except jwt.InvalidTokenError:
+        return jsonify({"error": "Invalid token"}), 401
+
+    # Récupérer les éléments du panier pour cet utilisateur
+    cart_items = Cart.objects(id_user=user_id)
+    if not cart_items:
+        return jsonify({"cart": []}), 200  # Renvoie un panier vide si aucun article trouvé
+
+    # Construire la réponse avec les détails du produit
+    response = []
+    for item in cart_items:
+        # Appeler get_product_by_id pour obtenir les détails du produit
+        try:
+            product = Products.objects.get(id=item.id_product.id)
+            product_details = {
+                "id": str(product.id),
+                "name": product.name,
+                "description": product.description,
+                "price": product.price,
+                "image": f"/products/{product.id}/image" if product.image else None,
+            }
+        except DoesNotExist:
+            product_details = {"error": "Product not found"}
+
+        # Ajouter l'article du panier à la réponse
+        response.append({
+            "product": product_details,
             "quantity": item.quantity,
-            "total_price": item.quantity * item.id_product.price
-        }
-        for item in cart_items
-    ]
+            "total_price": item.quantity * product.price if "price" in product_details else 0,
+        })
+
     return jsonify({"cart": response}), 200
 
 
