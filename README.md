@@ -143,32 +143,9 @@ db.products.find().pretty();
 ```
 
 request postman
-```bash  
-http://localhost:8002/products
 
-```
-Exemple de retour :
-{
-    "products": [
-        {
-            "description": "Comfortable running sneakers for everyday use.",
-            "id": "675c5d38e4de3534ea4800dc",
-            "image": "/products/675c5d38e4de3534ea4800dc/image",
-            "name": "Running Sneakers",
-            "price": 79.99,
-            "storage_quantity": 120
-        },
-        {
-            "description": "Comfortable Jogging for everyday use.",
-            "id": "675c5d38e4de3534ea4800dd",
-            "image": "/products/675c5d38e4de3534ea4800dd/image",
-            "name": "Jogging",
-            "price": 79.99,
-            "storage_quantity": 120
-        }
-    ]
-}
 
+Health check [GET]
 ```bash
 http://localhost:8001/health
     
@@ -178,13 +155,62 @@ Exemple de retour :
     "auth_service": true
 }
 
+Product detail [GET]
+```bash
+http://localhost:8002/products/{id}
+    
+```  
+ {id} =  "id": "675f0aeb846059bec45617dc" de products
 
+return Example :
+{
+    "product": {
+        "description": "Comfortable running sneakers for everyday use.",
+        "id": "675f0aeb846059bec45617dc",
+        "image": "/products/675f0aeb846059bec45617dc/image",
+        "name": "Running Sneakers",
+        "price": 79.99,
+        "storage_quantity": 120
+    }
+}
+
+Product image [GET]
 ```bash
 http://localhost:8002/products/{id}/image
     
 ```  
  {id} =  "id": "675c5d38e4de3534ea4800dc" de products
 
+Retrun display image
+
+All products[GET]
+```bash
+http://localhost:8002/products
+
+```
+Return Example :
+{
+    "products": [
+        {
+            "description": "Comfortable running sneakers for everyday use.",
+            "id": "675f0aeb846059bec45617dc",
+            "image": "/products/675f0aeb846059bec45617dc/image",
+            "name": "Running Sneakers",
+            "price": 79.99,
+            "storage_quantity": 120
+        },
+        {
+            "description": "Comfortable Jogging for everyday use.",
+            "id": "675f0aeb846059bec45617dd",
+            "image": "/products/675f0aeb846059bec45617dd/image",
+            "name": "Jogging",
+            "price": 79.99,
+            "storage_quantity": 120
+        }
+    ]
+}
+
+Sign up [POST]
 ```bash
 http://localhost:8001/auth/signup
     
@@ -195,11 +221,12 @@ body:
   "email": "user@example.com",
   "password": "password"
 }
-retour :
+return :
 {
     "message": "User created successfully"
 }
 
+Login [POST]
 ```bash
 http://localhost:8001/auth/login
         
@@ -209,26 +236,73 @@ body:
   "username": "user",
   "password": "password"
 }
-retour :
+return example :
 {
     "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjc1YzVkNjY1NzgzYWEwODZhYTA5MTg5In0.eCXmxQ5S2cv0h2Of1l6x5MBWZwxwZ41MaHAxsGonJZI"
 }
 
+Validate token [GET]
+```bash
+http://localhost:8001/auth/validate
+
+``` 
+Headers:
+Key: Authorization = token
+
+
+Add product to cart [POST]
 ```bash
 http://localhost:8002/cart
         
 ```
-retour :
+Body:
 {
-    "cart": []
+  "product_id": "{id}",
+  "quantity": 1
+}
+example:
+{
+  "id_product": "675f0aeb846059bec45617dc",
+  "quantity": 1
+}
+{id} =  id product
+
+
+return :
+{
+    "message": "Product added to cart"
 }
 
 Headers:
 Key: Authorization = token
 
-body:
+Get cart [GET]
+```bash
+http://localhost:8002/cart
+        
+```
+
+Headers:
+
+Key: Authorization = token
+
+
+
+return Example :
+
+
 {
-  "product_id": "{id}",
-  "quantity": 1
+    "cart": [
+        {
+            "product": {
+                "description": "Comfortable running sneakers for everyday use.",
+                "id": "675f0aeb846059bec45617dc",
+                "image": "/products/675f0aeb846059bec45617dc/image",
+                "name": "Running Sneakers",
+                "price": 79.99
+            },
+            "quantity": 2,
+            "total_price": 159.98
+        }
+    ]
 }
-{id} =  id product
