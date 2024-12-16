@@ -24,10 +24,10 @@ jobs:
 
       # Lancer les tests pour chaque service
       - name: Run tests for auth_service
-        run: docker compose run --rm auth_service pytest
+        run: docker-compose run --rm auth_service python -m pytest test.py 
 
       - name: Run tests for product_service
-        run: docker compose run --rm product_service pytest
+        run: docker-compose run --rm product_service python -m pytest test_product_service.py
 
       - name: Run tests for frontend_service
         run: docker compose run --rm frontend_service pytest
