@@ -16,27 +16,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Set up Docker Buildx
+      # Installe Docker Compose et Docker Buildx
+      - name: Set up Docker
         uses: docker/setup-buildx-action@v2
-
-      - name: Set up Docker Compose
-        uses: docker/setup-docker@v2
         with:
-          version: 'latest'
+          version: latest  # S'assure que vous avez la dernière version de Docker Buildx
 
       - name: Build Docker services
-        run: docker compose up -d --build  # Remplacer "docker-compose" par "docker compose"
+        run: docker compose up -d --build
 
       # Lancer les tests pour chaque service
       - name: Run tests for auth_service
-        run: docker compose run --rm auth_service python -m pytest test.py  # Remplacer "docker-compose" par "docker compose"
+        run: docker-compose run --rm auth_service python -m pytest test.py
 
       - name: Run tests for product_service
-        run: docker compose run --rm product_service python -m pytest test_product_service.py  # Remplacer "docker-compose" par "docker compose"
+        run: docker-compose run --rm product_service python -m pytest test_product_service.py
 
       - name: Run tests for frontend_service
-        run: docker compose run --rm frontend_service pytest  # Remplacer "docker-compose" par "docker compose"
+        run: docker compose run --rm frontend_service pytest
 
       - name: Clean up Docker
         if: always()
-        run: docker compose down  # Remplacer "docker-compose" par "docker compose"
+        run: docker compose down
