@@ -4,15 +4,15 @@ import mongomock
 import jwt
 from bson import ObjectId  # Pour générer un ID unique
 from mongoengine import connect, disconnect
-from product_service.app.main import get_app, Products, Cart
-from product_service.app.main import SECRET_KEY
+from main import get_app, Products, Cart, SECRET_KEY
+
 
 # Configuration de la base de test avec MongoMock
 connection = connect('mongoenginetest', host='mongodb://localhost', alias='testdbproduct', mongo_client_class=mongomock.MongoClient)
 
 app = get_app({
     'db': 'testdbproduct',
-    'host': 'localhost',
+    'host': 'mongo-product',
     'port': 27017,
     'username': 'root',
     'password': 'example',

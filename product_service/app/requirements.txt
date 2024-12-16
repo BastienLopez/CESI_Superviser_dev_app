@@ -8,3 +8,5 @@ pytest
 requests
 mongoengine
 flask-mongoengine
+mongomock
+pytest-mock

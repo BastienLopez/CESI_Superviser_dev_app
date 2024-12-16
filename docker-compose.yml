@@ -1,4 +1,4 @@
-version: '3.8'
+version: '3.9'
 
 services:
   frontend_service:
@@ -9,6 +9,9 @@ services:
       - "8000:8000"
     networks:
       - cesi_superviser_dev_app_network
+    depends_on:
+      - product_service
+      - auth_service
 
   product_service:
     build:
@@ -18,12 +21,16 @@ services:
       - "8002:8002"
     networks:
       - cesi_superviser_dev_app_network
+    volumes:
+      - ./product_service/app:/app
     environment:
       MONGO_HOST: mongo-product
       MONGO_PORT: 27017
       MONGO_USERNAME: root
       MONGO_PASSWORD: example
       MONGO_DB: products
+    depends_on:
+      - mongo-product
 
   auth_service:
     build:
@@ -33,12 +40,16 @@ services:
       - "8001:8001"
     networks:
       - cesi_superviser_dev_app_network
+    volumes:
+      - ./auth_service/app:/app
     environment:
       MONGO_HOST: mongo-auth
       MONGO_PORT: 27017
       MONGO_USERNAME: root
       MONGO_PASSWORD: example
       MONGO_DB: auth
+    depends_on:
+      - mongo-auth
 
   mongo-product:
     image: mongo:6.0

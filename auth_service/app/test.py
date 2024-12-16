@@ -7,7 +7,6 @@ import os
 import jwt
 import mongomock
 
-from auth_service.app.main import get_app
 
 # Add the parent directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,18 +15,15 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import pytest
 import logging
 
-# Import the Flask app instance from the main app file
-from .main import Users
-from .main import get_app
 
 from mongoengine import connect, disconnect
 connection = connect('mongoenginetest', host='mongodb://localhost', alias='testdb', mongo_client_class=mongomock.MongoClient)
 
-from auth_service.app.main import SECRET_KEY
+from main import get_app, Users, SECRET_KEY
 
 app = get_app({
     'db': 'testdb',
-    'host': 'localhost',  # Nom du service MongoDB dans Docker
+    'host': 'mongo-auth',  # Nom du service MongoDB dans Docker
     'port': 27017,  # Port de MongoDB
     'username': 'root',  # Nom d'utilisateur MongoDB
     'password': 'example',  # Mot de passe MongoDB
