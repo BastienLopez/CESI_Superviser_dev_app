@@ -21,6 +21,7 @@ class Users(me.Document):
     def __repr__(self):
         return f'<User {self.username}>'
 
+SECRET_KEY = "secret_key"
 
 def get_app(config):
 
@@ -33,7 +34,7 @@ def get_app(config):
     # Initialisation de MongoEngine
     db = MongoEngine(app)
 
-    SECRET_KEY = "secret_key"
+
 
 
     @app.route("/auth/signup", methods=["POST"])

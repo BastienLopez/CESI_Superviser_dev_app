@@ -3,9 +3,11 @@ import json
 import sys
 # Import os module for interacting with the operating system
 import os
-from unittest.mock import MagicMock, patch
 
+import jwt
 import mongomock
+
+from auth_service.app.main import get_app
 
 # Add the parent directory to sys.path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -20,6 +22,8 @@ from .main import get_app
 
 from mongoengine import connect, disconnect
 connection = connect('mongoenginetest', host='mongodb://localhost', alias='testdb', mongo_client_class=mongomock.MongoClient)
+
+from auth_service.app.main import SECRET_KEY
 
 app = get_app({
     'db': 'testdb',
@@ -40,21 +44,16 @@ def client():
     with app.test_client() as client:
         yield client
 
-# @pytest.fixture
-# def mock_database():
-#     """Mock database to simulate the Users collection."""
-#     mock_users = MagicMock()
-#     mock_users.objects = MagicMock()
-#     # Simuler un comportement où `filter()` ne renvoie rien, et donc `first()` renverra None
-#     mock_users.objects.filter.return_value.first.return_value = None  # Aucun utilisateur existant
-#     return mock_users
-#
-# @pytest.fixture
-# def setup_database(mock_database):
-#     """Fixture to set up and tear down the mock database."""
-#     Users.objects = mock_database.objects
-#     yield
-#     Users.objects.delete = MagicMock()
+@pytest.fixture
+def create_user():
+    """Fixture pour créer un utilisateur de test."""
+    user = Users(username="testuser", email="testuser@example.com")
+    user.set_password("password123")
+    user.save()
+    yield user
+    user.delete()
+    disconnect('mongoenginetest')
+
 
 def test_health(client):
     response = client.get('/health')
@@ -94,62 +93,91 @@ def test_signup_409(client):
         disconnect('mongoenginetest')
 
 
-def test_signup(client, setup_database, mock_database, capsys):
-    # Test d'inscription avec un utilisateur qui n'existe pas
+def test_login_200(client, create_user):
     data = {
-        "username": "newuser",
-        "email": "newuser@example.com",
+        "username": "testuser",
         "password": "password123"
     }
-    logger.debug("client: %s", client)
-    print("Testing signup")
-    # Effectuer la requête POST pour l'inscription
+    try:
+        response_login = client.post('/auth/login', data=json.dumps(data), content_type='application/json')
+
+        # Vérifications
+        assert response_login.status_code == 200
+        assert "token" in response_login.json
+
+        # Décodage du token
+        decoded = jwt.decode(response_login.json["token"], SECRET_KEY, algorithms=["HS256"])
+        assert decoded["user_id"] == str(create_user.id)
+    finally:
+        # Nettoyage
+        disconnect('mongoenginetest')
+
+
+def test_login_invalid_credentials(client):
+    data = {
+        "username": "wronguser",
+        "password": "wrongpassword"
+    }
+
+    response = client.post('/auth/login', data=json.dumps(data), content_type='application/json')
+
+    assert response.status_code == 401
+    assert response.json == {"error": "Invalid credentials"}
+
+
+def test_login_missing_fields(client):
+    data = {"username": "testuser"}  # Missing password
+
+    response = client.post('/auth/login', data=json.dumps(data), content_type='application/json')
+
+    assert response.status_code == 400
+    assert response.json == {"error": "Username and password are required"}
+
+
+def test_validate_success(client, create_user):
+    # Générer un token valide
+    token = jwt.encode({"user_id": str(create_user.id)}, SECRET_KEY, algorithm="HS256")
+
+    response = client.get('/auth/validate', headers={"Authorization": token})
+
+    assert response.status_code == 200
+    assert response.json == {"status": "valid", "user_id": str(create_user.id)}
+
+def test_validate_missing_token(client):
+    response = client.get('/auth/validate')
+
+    assert response.status_code == 400
+    assert response.json == {"error": "Token is missing"}
+
+def test_validate_invalid_token(client):
+    token = "invalid.token.here"
+
+    response = client.get('/auth/validate', headers={"Authorization": token})
+
+    assert response.status_code == 401
+    assert response.json == {"error": "Invalid token"}
+
+
+def test_validate_expired_token(client, create_user):
+    # Générer un token expiré (utilisation de jwt pour configurer l'expiration)
+    expired_token = jwt.encode(
+        {"user_id": str(create_user.id), "exp": 0}, SECRET_KEY, algorithm="HS256"
+    )
+
+    response = client.get('/auth/validate', headers={"Authorization": expired_token})
+
+    assert response.status_code == 401
+    assert response.json == {"error": "Token has expired"}
+
+
+def test_signup_missing_fields(client):
+    data = {
+        "username": "",  # Username manquant
+        "email": "test@example.com",
+        "password": "password123"
+    }
+
     response = client.post('/auth/signup', data=json.dumps(data), content_type='application/json')
 
-    captured = capsys.readouterr()
-    assert "Testing signup" in captured.out
-
-    # Afficher la réponse pour déboguer
-    print("Response data:", response.data)
-
-    # Vérification que la réponse est celle attendue pour un utilisateur créé
-    assert response.status_code == 201
-    assert response.json == {"message": "User created successfully"}
-
-    # Vérification que la méthode save() a été appelée pour enregistrer l'utilisateur
-    mock_database.objects.save.assert_called_once()  # Vérifier que save() a bien été appelée
-
-    # Simuler l'ajout de l'utilisateur et la recherche
-    mock_database.objects.filter.return_value.first.return_value = data  # L'utilisateur existe désormais
-    user = Users.objects(username="newuser").first()
-
-    assert user is not None
-    assert user.username == "newuser"
-    assert user.email == "newuser@example.com"
-
-
-
-def test_signup_user_exists(client, setup_database, mock_database):
-    # Test d'inscription avec un utilisateur qui existe déjà
-    existing_user = {
-        "username": "existinguser",
-        "email": "existinguser@example.com",
-        "password": "password123"
-    }
-
-    # Simuler qu'un utilisateur existe déjà avec le même nom d'utilisateur
-    mock_database.objects.filter.return_value.first.return_value = existing_user  # Utilisateur existant
-
-    # Données pour l'inscription
-    data = {
-        "username": "existinguser",
-        "email": "existinguser@example.com",
-        "password": "password123"
-    }
-
-    # Effectuer la requête POST pour l'inscription
-    response = client.post('/auth/signup', data=json.dumps(data), content_type='application/json')
-
-    # Vérification que la réponse est celle attendue pour un utilisateur déjà existant
-    assert response.status_code == 409
-    assert response.json == {"error": "User already exists"}
+    assert response.status_code == 400
+    assert response.json == {"error": "Username, email, and password are required"}
