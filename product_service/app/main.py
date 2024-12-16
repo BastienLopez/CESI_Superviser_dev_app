@@ -50,25 +50,6 @@ def get_app(config, auth_service_url=None):
     if auth_service_url:
         app.config['AUTH_SERVICE_URL'] = auth_service_url
 
-    # Retourne l'instance de l'application Flask
-
-
-
-
-# @app.route("/products/<string:product_id>/image", methods=["POST"])
-# def upload_product_image(product_id):
-#     file = request.files.get('image')
-#     if not file:
-#         return jsonify({"error": "No image file provided"}), 400
-#
-#     try:
-#         product = Products.objects.get(id=product_id)
-#         product.image = file.read()  # Lire les données binaires du fichier
-#         product.save()
-#         return jsonify({"message": "Image uploaded successfully"}), 200
-#     except DoesNotExist:
-#         return jsonify({"error": "Product not found"}), 404
-
     @app.route("/products/<product_id>", methods=["GET"])
     def get_product_by_id(product_id):
         try:
@@ -79,7 +60,7 @@ def get_app(config, auth_service_url=None):
             return jsonify({"error": "Product not found"}), 404
         except ValidationError:
             # Gestion des erreurs liées à un format d'ID non valide
-            return jsonify({"error": "Invalid product ID format"}), 400
+            return jsonify({"error": "Invalid product ID format"}), 404  # Retourner un 404, pas un 400
 
         # Construction de la réponse
         response = {
@@ -92,7 +73,6 @@ def get_app(config, auth_service_url=None):
         }
 
         return jsonify({"product": response}), 200
-
 
     @app.route("/products/<product_id>/image", methods=["GET"])
     def get_product_image(product_id):
@@ -108,7 +88,6 @@ def get_app(config, auth_service_url=None):
             return app.response_class(image_data, content_type="image/png"), 200
         except DoesNotExist:
             return jsonify({"error": "Product not found"}), 404
-
 
     @app.route("/products", methods=["GET"])
     def get_products():
@@ -170,7 +149,6 @@ def get_app(config, auth_service_url=None):
         cart_item.save()
 
         return jsonify({"message": "Product added to cart"}), 201
-
 
     @app.route("/cart", methods=["GET"])
     def view_cart():
