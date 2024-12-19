@@ -28,4 +28,3 @@ jobs:
             -Dsonar.coverage.exclusions=**/*
             -Dsonar.cpd.exclusions=**/*
             -Dsonar.issue.ignore.allfile=*
-            -Dsonar.analysis.mode=preview
