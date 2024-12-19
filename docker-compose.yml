@@ -1,84 +1,84 @@
+version: '3.9'
+
 services:
-  # Base de données pour le service d'authentification
-  mongo-auth:
-    image: mongo:6.0
-    container_name: mongo-auth
-    environment:
-      MONGO_INITDB_DATABASE: authdb
-    volumes:
-      - auth_data:/data/db
-    ports:
-      - "27017:27017"  # Expose MongoDB auth sur localhost pour VSCode/Compass
-    networks:
-      - backend
-
-  # Service d'authentification
-  auth_service:
-    build:
-      context: ./auth_service
-      dockerfile: app/Dockerfile
-    container_name: auth_service
-    environment:
-      MONGO_URI: mongodb://mongo-auth:27017/authdb
-    depends_on:
-      - mongo-auth
-    volumes:
-      - ./auth_service/app:/app
-    ports:
-      - "8001:8001"
-    networks:
-      - backend
-
-  # Base de données pour le service de produits
-  mongo-product:
-    image: mongo:6.0
-    container_name: mongo-product
-    environment:
-      MONGO_INITDB_DATABASE: productdb
-    volumes:
-      - product_data:/data/db
-    ports:
-      - "27018:27017"  # Expose MongoDB product sur localhost pour VSCode/Compass
-    networks:
-      - backend
-
-  # Service de gestion des produits
-  product_service:
-    build:
-      context: ./product_service
-      dockerfile: app/Dockerfile
-    container_name: product_service
-    environment:
-      MONGO_URI: mongodb://mongo-product:27017/productdb
-    depends_on:
-      - mongo-product
-    volumes:
-      - ./product_service/app:/app
-    ports:
-      - "8002:8002"
-    networks:
-      - backend
-
-  # Service frontend
   frontend_service:
     build:
       context: ./frontend_service
-      dockerfile: app/Dockerfile
-    container_name: frontend_service
-    volumes:
-      - ./frontend_service/app:/app
+      dockerfile: Dockerfile
     ports:
       - "8000:8000"
-    depends_on:
-      - auth_service
-      - product_service
     networks:
-      - backend
+      - cesi_superviser_dev_app_network
+    depends_on:
+      - product_service
+      - auth_service
 
-volumes:
-  auth_data:
-  product_data:
+  product_service:
+    build:
+      context: ./product_service
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    networks:
+      - cesi_superviser_dev_app_network
+    volumes:
+      - ./product_service/app:/app
+    environment:
+      MONGO_HOST: mongo-product
+      MONGO_PORT: 27017
+      MONGO_USERNAME: root
+      MONGO_PASSWORD: example
+      MONGO_DB: products
+    depends_on:
+      - mongo-product
+
+  auth_service:
+    build:
+      context: ./auth_service
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    networks:
+      - cesi_superviser_dev_app_network
+    volumes:
+      - ./auth_service/app:/app
+    environment:
+      MONGO_HOST: mongo-auth
+      MONGO_PORT: 27017
+      MONGO_USERNAME: root
+      MONGO_PASSWORD: example
+      MONGO_DB: auth
+    depends_on:
+      - mongo-auth
+
+  mongo-product:
+    image: mongo:6.0
+    container_name: mongo-product
+    ports:
+      - "27018:27017"
+    networks:
+      - cesi_superviser_dev_app_network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - ./mongo-init/fixtures:/fixtures
+      - ./mongo-init/import_products.sh:/docker-entrypoint-initdb.d/mongo_import.sh
+
+  mongo-auth:
+    image: mongo:6.0
+    container_name: mongo-auth
+    ports:
+      - "27017:27017"
+    networks:
+      - cesi_superviser_dev_app_network
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: example
+    volumes:
+      - ./mongo-init/fixtures:/fixtures
+      - ./mongo-init/import_users.sh:/docker-entrypoint-initdb.d/mongo_import.sh
 
 networks:
-  backend:
+  cesi_superviser_dev_app_network:
     driver: bridge

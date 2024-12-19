@@ -6,3 +6,6 @@ PyJWT==2.6.0
 bcrypt
 pytest
 requests
+mongoengine
+flask-mongoengine
+mongomock

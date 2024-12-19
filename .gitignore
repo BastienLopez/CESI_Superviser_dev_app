@@ -12,6 +12,7 @@ __pycache__/
 
 # Config VSCode (facultatif)
 .vscode/
+.idea/
 
 # Fichiers système
 .DS_Store
@@ -19,3 +20,4 @@ Thumbs.db
 
 # Fichiers temporaires
 *.swp
+/.venv/

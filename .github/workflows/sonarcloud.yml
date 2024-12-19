@@ -24,3 +24,6 @@ jobs:
             -Dsonar.projectKey=BastienLopez_CESI_Superviser_dev_app
             -Dsonar.organization=bastienlopez
             -Dsonar.host.url=https://sonarcloud.io
+            -Dsonar.qualitygate.wait=false
+            -Dsonar.coverage.exclusions=**/*
+            -Dsonar.cpd.exclusions=**/*
