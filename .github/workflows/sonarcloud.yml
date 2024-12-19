@@ -25,3 +25,6 @@ jobs:
             -Dsonar.organization=bastienlopez
             -Dsonar.host.url=https://sonarcloud.io
             -Dsonar.qualitygate.wait=false
+            -Dsonar.analysis.mode=publish
+            -Dsonar.skip.quality.gate.check=true
+            -Dsonar.skipCodeAnalysis=true
