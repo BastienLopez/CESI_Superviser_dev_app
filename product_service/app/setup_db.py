@@ -21,7 +21,9 @@ def setup_product_db():
         {"product_id": "4", "name": "Sac à dos", "price": 29.99}
     ]
     products_collection.insert_many(sample_products)
+    cart_collection.insert_one({"product_id": "1", "name": "Collation", "price": 19.99})
     print("Base de données des produits initialisée avec succès.")
+
 
 if __name__ == "__main__":
     setup_product_db()
