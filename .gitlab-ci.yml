@@ -1,0 +1,161 @@
+stages:
+  - build
+  - test
+  - codeQuality
+  - sast
+  - codecoverage
+  - publish
+  - cleanup
+
+variables:
+  DOCKER_HOST: tcp://docker:2375
+  DOCKER_TLS_CERTDIR: ""
+  PYTHONPATH: "/app"  # Ajout de la variable PYTHONPATH pour pointer vers votre répertoire d'app
+
+services:
+  - docker:dind
+
+before_script:
+  # Mise à jour des dépendances nécessaires avec apt-get
+  - apt-get update -y
+  - apt-get install -y docker-compose python3 python3-pip python3-venv
+  # Création d'un environnement virtuel
+  - python3 -m venv /env
+  - source /env/bin/activate
+  # Mise à jour de pip, setuptools et wheel dans l'environnement virtuel
+  - pip install --upgrade pip setuptools wheel
+  # Installation des dépendances de l'application
+  - pip install -r requirements.txt
+  - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+# Étape de construction Docker
+build:
+  stage: build
+  script:
+    - echo "Building Docker services..."
+    - docker-compose up -d --build
+
+# Tests pour les services Flask
+test_auth_service:
+  stage: test
+  script:
+    - echo "Running tests for auth_service..."
+    - docker-compose run --rm auth_service pytest /app/test.py
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - htmlcov/  # Rapport de couverture de code
+      - coverage.xml  # Rapport XML de couverture
+    when: always
+
+test_product_service:
+  stage: test
+  script:
+    - echo "Running tests for product_service..."
+    - docker-compose run --rm product_service pytest
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - htmlcov/  # Rapport de couverture de code
+      - coverage.xml  # Rapport XML de couverture
+    when: always
+
+test_frontend_service:
+  stage: test
+  script:
+    - echo "Running tests for frontend_service..."
+    - docker-compose run --rm frontend_service pytest
+  dependencies:
+    - build
+  artifacts:
+    paths:
+      - htmlcov/  # Rapport de couverture de code
+      - coverage.xml  # Rapport XML de couverture
+    when: always
+
+# Analyse de qualité de code
+code_quality:
+  stage: codeQuality
+  image: python:3.9-slim
+  script:
+    - pip install pylint
+    - echo "Running pylint for code quality analysis..."
+    - pylint --output-format=json --fail-under=7 my_flask_app/ > pylint-report.json || true
+  artifacts:
+    paths:
+      - pylint-report.json
+    reports:
+      codequality: pylint-report.json
+
+# Analyse SAST avec Bandit
+sast:
+  stage: sast
+  image: python:3.9-slim
+  script:
+    - pip install bandit
+    - echo "Running Bandit for static application security testing..."
+    - bandit -r auth_service/app -f json -o bandit-report.json -iii --exclude '*/test/*,*/test*.py'
+    - bandit -r product_service/app -f json -o bandit-report.json -iii --exclude '*/test/*,*/test*.py'
+    - bandit -r frontend_service/app -f json -o bandit-report.json -iii --exclude '*/test/*,*/test*.py'
+  artifacts:
+    reports:
+      sast: bandit-report.json
+  after_script:
+    - cat bandit-report.json
+
+# Couverture de code avec pytest-cov
+code_coverage:
+  stage: codecoverage
+  services:
+    - docker:dind
+  script:
+    - echo "Running coverage tests for auth_service..."
+    - docker-compose run --rm auth_service pytest test.py --cov=app --cov-report=xml --cov-report=html
+    - echo "Running coverage tests for product_service..."
+    - docker-compose run --rm product_service pytest test_product_service.py --cov=app --cov-report=xml --cov-report=html
+    - echo "Running coverage tests for frontend_service..."
+    - docker-compose run --rm frontend_service pytest test/test_app.py --cov=app --cov-report=xml --cov-report=html
+  artifacts:
+    paths:
+      - htmlcov/
+      - coverage.xml
+    when: always
+
+# Publication des images Docker
+publish_images:
+  stage: publish
+  script:
+    - echo "Pushing images to GitLab Registry..."
+    
+    # Frontend Service
+    - docker build -t $CI_REGISTRY_IMAGE/frontend_service:$CI_COMMIT_SHORT_SHA ./frontend_service
+    - docker push $CI_REGISTRY_IMAGE/frontend_service:$CI_COMMIT_SHORT_SHA
+    - docker tag $CI_REGISTRY_IMAGE/frontend_service:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/frontend_service:latest
+    - docker push $CI_REGISTRY_IMAGE/frontend_service:latest
+    
+    # Product Service
+    - docker build -t $CI_REGISTRY_IMAGE/product_service:$CI_COMMIT_SHORT_SHA ./product_service
+    - docker push $CI_REGISTRY_IMAGE/product_service:$CI_COMMIT_SHORT_SHA
+    - docker tag $CI_REGISTRY_IMAGE/product_service:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/product_service:latest
+    - docker push $CI_REGISTRY_IMAGE/product_service:latest
+    
+    # Auth Service
+    - docker build -t $CI_REGISTRY_IMAGE/auth_service:$CI_COMMIT_SHORT_SHA ./auth_service
+    - docker push $CI_REGISTRY_IMAGE/auth_service:$CI_COMMIT_SHORT_SHA
+    - docker tag $CI_REGISTRY_IMAGE/auth_service:$CI_COMMIT_SHORT_SHA $CI_REGISTRY_IMAGE/auth_service:latest
+    - docker push $CI_REGISTRY_IMAGE/auth_service:latest
+  
+  only:
+    - main
+  dependencies:
+    - build
+
+# Nettoyage Docker
+cleanup:
+  stage: cleanup
+  script:
+    - echo "Cleaning up Docker..."
+    - docker-compose down
+  when: always

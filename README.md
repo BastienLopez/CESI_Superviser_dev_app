@@ -72,12 +72,15 @@ Vous pouvez exécuter des tests pour chaque service individuellement en utilisan
 
 ```bash
 docker compose run --rm auth_service pytest
+docker compose run --rm auth_service pytest /app/test.py
 ```
 
 ### Exécuter les tests pour `product_service`
 
 ```bash
 docker compose run --rm product_service pytest
+docker compose run --rm product_service/app/test/test_main.py
+
 ```
 
 ### Exécuter les tests pour `frontend_service`
@@ -98,6 +101,8 @@ Pour arrêter tous les services et nettoyer les conteneurs, utilisez la commande
 
 ```bash
 docker compose down
+docker compose down --volumes --rmi all
+
 ```
 
 ## Visualisation des bases de données dans VS Code
@@ -120,3 +125,185 @@ Si vous rencontrez des problèmes avec Docker, essayez de reconstruire les conte
 ```bash
 docker compose up --build --force-recreate
 ```
+
+
+```bash
+docker exec -it mongo-auth bash
+mongosh
+use authdb;
+db.users.find();
+db.users.find().pretty();
+```
+
+```bash
+docker exec -it mongo-product bash
+mongosh
+use productdb;
+db.products.find();
+db.products.find().pretty();
+```
+
+request postman
+
+
+Health check [GET]
+```bash
+http://localhost:8001/health
+    
+```
+Exemple de retour :
+{
+    "auth_service": true
+}
+
+Product detail [GET]
+```bash
+http://localhost:8002/products/{id}
+    
+```  
+ {id} =  "id": "675f0aeb846059bec45617dc" de products
+
+return Example :
+{
+    "product": {
+        "description": "Comfortable running sneakers for everyday use.",
+        "id": "675f0aeb846059bec45617dc",
+        "image": "/products/675f0aeb846059bec45617dc/image",
+        "name": "Running Sneakers",
+        "price": 79.99,
+        "storage_quantity": 120
+    }
+}
+
+Product image [GET]
+```bash
+http://localhost:8002/products/{id}/image
+    
+```  
+ {id} =  "id": "675c5d38e4de3534ea4800dc" de products
+
+Retrun display image
+
+All products[GET]
+```bash
+http://localhost:8002/products
+
+```
+Return Example :
+{
+    "products": [
+        {
+            "description": "Comfortable running sneakers for everyday use.",
+            "id": "675f0aeb846059bec45617dc",
+            "image": "/products/675f0aeb846059bec45617dc/image",
+            "name": "Running Sneakers",
+            "price": 79.99,
+            "storage_quantity": 120
+        },
+        {
+            "description": "Comfortable Jogging for everyday use.",
+            "id": "675f0aeb846059bec45617dd",
+            "image": "/products/675f0aeb846059bec45617dd/image",
+            "name": "Jogging",
+            "price": 79.99,
+            "storage_quantity": 120
+        }
+    ]
+}
+
+Sign up [POST]
+```bash
+http://localhost:8001/auth/signup
+    
+```
+body:
+{
+  "username": "user",
+  "email": "user@example.com",
+  "password": "password"
+}
+return :
+{
+    "message": "User created successfully"
+}
+
+Login [POST]
+```bash
+http://localhost:8001/auth/login
+        
+```
+body:
+{
+  "username": "user",
+  "password": "password"
+}
+return example :
+{
+    "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiNjc1YzVkNjY1NzgzYWEwODZhYTA5MTg5In0.eCXmxQ5S2cv0h2Of1l6x5MBWZwxwZ41MaHAxsGonJZI"
+}
+
+Validate token [GET]
+```bash
+http://localhost:8001/auth/validate
+
+``` 
+Headers:
+Key: Authorization = token
+
+
+Add product to cart [POST]
+```bash
+http://localhost:8002/cart
+        
+```
+Body:
+{
+  "product_id": "{id}",
+  "quantity": 1
+}
+example:
+{
+  "id_product": "675f0aeb846059bec45617dc",
+  "quantity": 1
+}
+{id} =  id product
+
+
+return :
+{
+    "message": "Product added to cart"
+}
+
+Headers:
+Key: Authorization = token
+
+Get cart [GET]
+```bash
+http://localhost:8002/cart
+        
+```
+
+Headers:
+
+Key: Authorization = token
+
+
+
+return Example :
+
+
+{
+    "cart": [
+        {
+            "product": {
+                "description": "Comfortable running sneakers for everyday use.",
+                "id": "675f0aeb846059bec45617dc",
+                "image": "/products/675f0aeb846059bec45617dc/image",
+                "name": "Running Sneakers",
+                "price": 79.99
+            },
+            "quantity": 2,
+            "total_price": 159.98
+        }
+    ]
+}

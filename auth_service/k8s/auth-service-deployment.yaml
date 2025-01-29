@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: auth-service
+  name: auth-service
+  namespace: auth-service-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: auth-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: auth-service
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry
+      containers:
+        - env:
+            - name: MONGO_DB
+              value: auth
+            - name: MONGO_HOST
+              value: mongo-auth
+            - name: MONGO_PASSWORD
+              value: example
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_USERNAME
+              value: root
+          image: registry.gitlab.com/damien-d/breizhsport/auth_service:latest
+          name: auth-service
+          ports:
+            - containerPort: 8001
+              protocol: TCP
+          # volumeMounts:
+            # - mountPath: /app
+              # name: auth-service-claim0
+      restartPolicy: Always
+      # volumes:
+      #   - name: auth-service-claim0
+      #     persistentVolumeClaim:
+      #       claimName: auth-service-claim0

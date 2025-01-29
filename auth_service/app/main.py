@@ -1,87 +1,181 @@
 from flask import Flask, request, jsonify
-from pymongo import MongoClient, errors
+from flask_mongoengine import MongoEngine
 import jwt
+import mongoengine as me
 import bcrypt
 import os
 
-app = Flask(__name__)
 
-# Connexion à MongoDB
-mongo_uri = os.getenv("MONGO_URI", "mongodb://mongo-auth:27017/authdb")
-try:
-    client = MongoClient(mongo_uri, serverSelectionTimeoutMS=5000)
-    db = client["authdb"]
-    users_collection = db["users"]
-    client.admin.command('ping')
-    print("Connecté à MongoDB avec succès")
-except errors.ServerSelectionTimeoutError as err:
-    print("Erreur de connexion à MongoDB:", err)
-    db = None
+class Users(me.Document):
+    """
+    Représente un utilisateur dans la base de données MongoDB.
+
+    Attributes:
+        username (str): Le nom d'utilisateur de l'utilisateur.
+        email (str): L'adresse email de l'utilisateur.
+        password (str): Le mot de passe de l'utilisateur.
+    """
+    username = me.StringField(required=True, unique=True, max_length=80)
+    email = me.EmailField(required=True, unique=True)
+    password = me.StringField(required=True, min_length=6)
+
+    # Méthode pour hacher le mot de passe avant de l'enregistrer
+    def set_password(self, password):
+        """
+        Hache le mot de passe avant de l'enregistrer.
+
+        Args:
+            password (str): Le mot de passe en clair à hacher.
+        """
+        self.password = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+
+    # Méthode pour vérifier le mot de passe
+    def check_password(self, password):
+        """
+        Vérifie si le mot de passe correspond à celui stocké.
+
+        Args:
+            password (str): Le mot de passe à vérifier.
+
+        Returns:
+            bool: True si les mots de passe correspondent, False sinon.
+        """
+        return bcrypt.checkpw(password.encode('utf-8'), self.password.encode('utf-8'))
+
+    def __repr__(self):
+        """
+        Représentation de l'utilisateur sous forme de chaîne.
+
+        Returns:
+            str: Représentation sous forme de chaîne du nom d'utilisateur.
+        """
+        return f'<User {self.username}>'
 
 SECRET_KEY = "secret_key"
 
-@app.route("/auth/signup", methods=["POST"])
-def signup():
-    if db is None:
-        return jsonify({"error": "Database connection failed"}), 500
+def get_app(config):
+    """
+    Crée une application Flask pour le service d'authentification.
 
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
+    Args:
+        config (dict): Configuration de la base de données MongoDB.
 
-    if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
+    Returns:
+        Flask: L'application Flask configurée.
+    """
 
-    if users_collection.find_one({"username": username}):
-        return jsonify({"error": "User already exists"}), 409
+    app = Flask(__name__)
 
-    hashed_password = bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt())
-    users_collection.insert_one({"username": username, "password": hashed_password})
-    return jsonify({"message": "User created successfully"}), 201
+    # Configuration de MongoDB
+    app.config['MONGODB_SETTINGS'] = config
 
-@app.route("/auth/login", methods=["POST"])
-def login():
-    if db is None:
-        return jsonify({"error": "Database connection failed"}), 500
 
-    data = request.json
-    username = data.get("username")
-    password = data.get("password")
+    # Initialisation de MongoEngine
+    db = MongoEngine(app)
 
-    if not username or not password:
-        return jsonify({"error": "Username and password are required"}), 400
 
-    user = users_collection.find_one({"username": username})
-    if user and bcrypt.checkpw(password.encode("utf-8"), user["password"]):
-        token = jwt.encode({"user_id": str(user["_id"])}, SECRET_KEY, algorithm="HS256")
-        return jsonify({"token": token}), 200
-    else:
-        return jsonify({"error": "Invalid credentials"}), 401
 
-@app.route("/auth/validate", methods=["GET"])
-def validate():
-    if db is None:
-        return jsonify({"error": "Database connection failed"}), 500
 
-    token = request.headers.get("Authorization")
-    if not token:
-        return jsonify({"error": "Token is missing"}), 400
+    @app.route("/auth/signup", methods=["POST"])
+    def signup():
+        """
+        Endpoint pour l'inscription d'un utilisateur.
 
-    try:
-        decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-        return jsonify({"status": "valid", "user_id": decoded["user_id"]}), 200
-    except jwt.ExpiredSignatureError:
-        return jsonify({"error": "Token has expired"}), 401
-    except jwt.InvalidTokenError:
-        return jsonify({"error": "Invalid token"}), 401
+        Attendu : une requête POST avec les données JSON contenant un nom d'utilisateur, un email et un mot de passe.
+        Retourne un message de succès ou une erreur.
 
-@app.route("/health", methods=["GET"])
-def health_check():
-    """Endpoint pour vérifier la santé du service d'authentification"""
-    if db is None:
-        return jsonify({"auth_service": False}), 500
-    return jsonify({"auth_service": True}), 200
+        Returns:
+            Response: La réponse de l'API.
+        """
+        data = request.json
+        username = data.get("username")
+        email = data.get("email")
+        password = data.get("password")
 
+        if not username or not email or not password:
+            return jsonify({"error": "Username, email, and password are required"}), 400
+
+        # Vérifier si l'utilisateur existe déjà
+        if Users.objects(username=username):
+            return jsonify({"error": "User already exists"}), 409
+
+        user = Users(username=username, email=email)
+        user.set_password(password)  # Hachage du mot de passe
+        user.save()
+
+        return jsonify({"message": "User created successfully"}), 201
+
+
+    @app.route("/auth/login", methods=["POST"])
+    def login():
+        """
+        Endpoint pour la connexion d'un utilisateur.
+
+        Attendu : une requête POST avec les données JSON contenant un nom d'utilisateur et un mot de passe.
+        Retourne un token JWT si les informations sont correctes, ou une erreur.
+
+        Returns:
+            Response: La réponse de l'API.
+        """
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({"error": "Username and password are required"}), 400
+
+        user = Users.objects(username=username).first()
+        if user and user.check_password(password):  # Vérification du mot de passe
+            token = jwt.encode({"user_id": str(user.id)}, SECRET_KEY, algorithm="HS256")
+            return jsonify({"token": token}), 200
+        else:
+            return jsonify({"error": "Invalid credentials"}), 401
+
+
+    @app.route("/auth/validate", methods=["GET"])
+    def validate():
+        """
+        Endpoint pour valider un token JWT.
+
+        Attendu : une requête GET avec un en-tête Authorization contenant un token JWT.
+        Retourne l'état du token (valide ou expiré).
+
+        Returns:
+            Response: La réponse de l'API.
+        """
+        token = request.headers.get("Authorization")
+        if not token:
+            return jsonify({"error": "Token is missing"}), 400
+
+        try:
+            decoded = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+            return jsonify({"status": "valid", "user_id": decoded["user_id"]}), 200
+        except jwt.ExpiredSignatureError:
+            return jsonify({"error": "Token has expired"}), 401
+        except jwt.InvalidTokenError:
+            return jsonify({"error": "Invalid token"}), 401
+
+
+    @app.route("/health", methods=["GET"])
+    def health_check():
+        """
+        Endpoint pour vérifier la santé du service d'authentification.
+
+        Returns:
+            Response: La réponse de l'API avec l'état de la base de données.
+        """
+        if db is None:
+            return jsonify({"auth_service": False}), 500
+        return jsonify({"auth_service": True}), 200
+
+    return app
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=8001)
+    get_app({
+        'db': os.getenv('MONGO_DB', 'auth'),  # Par défaut à 'auth' si non défini
+        'host': os.getenv('MONGO_HOST', 'localhost'),
+        'port': int(os.getenv('MONGO_PORT', 27017)),
+        'username': os.getenv('MONGO_USERNAME', 'root'),
+        'password': os.getenv('MONGO_PASSWORD', 'example'),
+        'authentication_source': 'admin'
+    }).run(host="0.0.0.0", port=8001)

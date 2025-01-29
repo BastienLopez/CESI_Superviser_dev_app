@@ -1,0 +1,52 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.35.0 (9532ceef3)
+  labels:
+    io.kompose.service: product-service
+  name: product-service
+  namespace: product-service-namespace
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: product-service
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        kompose.cmd: kompose convert
+        kompose.version: 1.35.0 (9532ceef3)
+      labels:
+        io.kompose.service: product-service
+    spec:
+      imagePullSecrets:
+      - name: gitlab-registry
+      containers:
+        - env:
+            - name: MONGO_DB
+              value: products
+            - name: MONGO_HOST
+              value: mongo-product
+            - name: MONGO_PASSWORD
+              value: example
+            - name: MONGO_PORT
+              value: "27017"
+            - name: MONGO_USERNAME
+              value: root
+          image: registry.gitlab.com/damien-d/breizhsport/product_service:latest
+          name: product-service
+          ports:
+            - containerPort: 8002
+              protocol: TCP
+          volumeMounts:
+            - mountPath: /app
+              name: product-service-claim0
+      restartPolicy: Always
+      volumes:
+        - name: product-service-claim0
+          persistentVolumeClaim:
+            claimName: product-service-claim0

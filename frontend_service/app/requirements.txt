@@ -6,3 +6,4 @@ PyJWT==2.6.0
 bcrypt
 pytest
 requests
+pytest-cov
